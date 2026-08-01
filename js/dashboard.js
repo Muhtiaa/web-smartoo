@@ -45,10 +45,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedOtp = localStorage.getItem('smartoo_otp');
 
     if (savedPhone && savedOtp) {
-      // Sesi ada, langsung coba fetch data
+      // Sembunyikan login sementara memverifikasi
       loginSection.style.display = 'none';
-      dashboardSection.style.display = 'block';
-      await fetchDashboardData(savedPhone, savedOtp);
+      dashboardSection.style.display = 'none';
+      
+      const success = await fetchDashboardData(savedPhone, savedOtp);
+      
+      if (success) {
+        dashboardSection.style.display = 'block';
+      } else {
+        // Jika gagal verifikasi sesi, hapus storage dan munculkan form login
+        localStorage.removeItem('smartoo_phone');
+        localStorage.removeItem('smartoo_otp');
+        localStorage.removeItem('smartoo_id_wa');
+        loginSection.style.display = 'flex';
+      }
     } else {
       // Tidak ada sesi, tampilkan login
       loginSection.style.display = 'flex';
