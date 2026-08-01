@@ -56,8 +56,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  const handleLogout = (e) => {
+  const handleLogout = async (e) => {
     if (e) e.preventDefault();
+    const phone = localStorage.getItem('smartoo_phone');
+    const otp = localStorage.getItem('smartoo_otp');
+
+    // Beritahu server untuk MENGHAPUS OTP ini secara permanen agar tidak bisa dipakai login 2 kali
+    if (phone && otp) {
+      try {
+        await fetch('https://n8n.smart-oo.me/webhook/dashboard-crud', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'logout', phone: phone, otp: otp })
+        });
+      } catch (err) {
+        console.error("Gagal menghubungi server saat logout", err);
+      }
+    }
+
     localStorage.removeItem('smartoo_phone');
     localStorage.removeItem('smartoo_otp');
     localStorage.removeItem('smartoo_id_wa');
@@ -182,10 +198,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Render Charts
-    renderCharts(metrics, data.chartData);
+    renderCharts(metrics, activities);
   };
 
-  const renderCharts = (metrics, chartData) => {
+  const renderCharts = (metrics, activities) => {
     // Destroy old charts if exist
     if (pieChartObj) pieChartObj.destroy();
     if (lineChartObj) lineChartObj.destroy();
@@ -205,19 +221,46 @@ document.addEventListener('DOMContentLoaded', () => {
       options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Line Chart (Dummy / basic for now until backend provides daily array)
-    const ctxLine = document.getElementById('lineChart').getContext('2d');
-    const labels = chartData ? chartData.map(d => d.label) : ['Awal Bulan', 'Pertengahan', 'Sekarang'];
-    const dataIncome = chartData ? chartData.map(d => d.income) : [0, metrics.income/2, metrics.income];
-    const dataExpense = chartData ? chartData.map(d => d.expense) : [0, metrics.expense/2, metrics.expense];
+    // Line Chart (Dinamis dari aktivitas)
+    let labels = [];
+    let dataIncome = [];
+    let dataExpense = [];
+    
+    if (activities && activities.length > 0) {
+      const dailyData = {};
+      activities.forEach(act => {
+        const date = act.tanggal;
+        if (!dailyData[date]) dailyData[date] = { income: 0, expense: 0 };
+        if (act.jenis_transaksi === 'Pemasukan') dailyData[date].income += act.nominal;
+        if (act.jenis_transaksi === 'Pengeluaran') dailyData[date].expense += act.nominal;
+      });
 
+      labels = Object.keys(dailyData).sort();
+      labels.forEach(date => {
+        dataIncome.push(dailyData[date].income);
+        dataExpense.push(dailyData[date].expense);
+      });
+      
+      // Jika cuma 1 tanggal, duplikat agar terbentuk garis
+      if (labels.length === 1) {
+        labels.push(labels[0] + " (Akhir)");
+        dataIncome.push(dataIncome[0]);
+        dataExpense.push(dataExpense[0]);
+      }
+    } else {
+      labels = ['Kosong'];
+      dataIncome = [0];
+      dataExpense = [0];
+    }
+
+    const ctxLine = document.getElementById('lineChart').getContext('2d');
     lineChartObj = new Chart(ctxLine, {
       type: 'line',
       data: {
         labels: labels,
         datasets: [
-          { label: 'Pemasukan', data: dataIncome, borderColor: '#27ae60', tension: 0.3 },
-          { label: 'Pengeluaran', data: dataExpense, borderColor: '#c0392b', tension: 0.3 }
+          { label: 'Pemasukan', data: dataIncome, borderColor: '#27ae60', backgroundColor: 'rgba(39, 174, 96, 0.2)', tension: 0.3, fill: true },
+          { label: 'Pengeluaran', data: dataExpense, borderColor: '#c0392b', backgroundColor: 'rgba(192, 57, 43, 0.2)', tension: 0.3, fill: true }
         ]
       },
       options: { responsive: true, maintainAspectRatio: false }
