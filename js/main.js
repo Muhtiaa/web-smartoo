@@ -9,8 +9,7 @@
 const CONFIG = {
   csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQdgzjoUdoMloIospOYe7Nc9JSnnQN7zn_G15oi9EFzaW0ENeNGPlRc2RUD4DW_mQ3NZPirJed44D_3/pub?gid=0&single=true&output=csv",
   waNumber: "6281384816826",
-  tgBot: "Smartoo_GenTwo_bot",
-  sheetsEditUrl: "https://docs.google.com/spreadsheets/d/1f2BenQyUipPzX08d-3gwnX7_3cPrgBOFRqq5tGNVeWM/edit?usp=sharing"
+  tgBot: "Smartoo_GenTwo_bot"
 };
 
 // ============================================================
@@ -77,11 +76,12 @@ async function loadAllData() {
   renderRoadmap();
   renderEducation();
 
-  setTimeout(() => {
+  // Initialize UI components after DOM is fully populated
+  requestAnimationFrame(() => {
     initScrollAnimations();
     initCarousels();
     initGlowingTrail();
-  }, 100);
+  });
 }
 
 // ============================================================
@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initNavbarScroll();
   initEasterEgg();
   renderAISolutions();
-  initEducationModal();
+
   initHeroChatbot();
 
   initLanguageModal();
@@ -465,14 +465,19 @@ function initEasterEgg() {
         if (cloneNotif) cloneNotif.remove();
 
         // Get full HTML string
-        let htmlContent = "<!DOCTYPE html>\\n" + clone.outerHTML;
+        let htmlContent = "<!DOCTYPE html>\n" + clone.outerHTML;
+        
+        // Get current filename for saving
+        let currentPath = window.location.pathname;
+        let filename = currentPath.substring(currentPath.lastIndexOf('/') + 1) || "index.html";
+        if (filename === "") filename = "index.html";
         
         // Trigger download
         const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "index.html";
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -517,6 +522,12 @@ function renderProjects() {
     const imageUrl = linkGambarRaw ? linkGambarRaw.split(",")[0].trim() : "";
 
     const isFeatured = index === 0;
+    
+    // AUTO-LINK: Jika proyek berhubungan dengan "Keuangan" atau proyek pertama, arahkan ke Lapis 2
+    let detailLink = item.Link || item.link || 'javascript:void(0)';
+    if (title.toLowerCase().includes("keuang") || index === 0) {
+      detailLink = "asisten-catatan-keuangan.html";
+    }
 
     const card = document.createElement("div");
     card.className = `portfolio-card fade-in stagger-${(index % 6) + 1}${isFeatured ? " featured" : ""}`;
@@ -538,34 +549,12 @@ function renderProjects() {
         <p class="card-desc">${desc}</p>
         
         <div class="card-actions" style="margin-bottom: 12px;">
-          <a href="#" class="btn read-more-project" style="width:100%; background:var(--bg-primary); border:2px solid var(--text-dark); color:var(--text-dark); text-align:center;">Detail Project ➔</a>
-        </div>
-        
-        <div class="card-actions">
-          <a href="${generateWALink(title)}" target="_blank" rel="noopener noreferrer" class="btn btn-wa">WhatsApp</a>
-          <a href="${generateTGLink(title)}" target="_blank" rel="noopener noreferrer" class="btn btn-tg">Telegram</a>
+          <a href="${detailLink}" class="btn read-more-project" style="width:100%; background:var(--bg-primary); border:2px solid var(--text-dark); color:var(--text-dark); text-align:center;">Detail Project ➔</a>
         </div>
       </div>
     `;
     grid.appendChild(card);
-
-    // Modal click logic for Project
-    const detailBtn = card.querySelector(".read-more-project");
-    if (detailBtn) {
-      detailBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        openEducationModal(item.detail_gambar, item.detail_teks);
-      });
-    }
   });
-
-  const addCard = document.createElement("div");
-  addCard.className = "add-card fade-in";
-  addCard.innerHTML = `<div class="add-icon">+</div><span class="add-label">Tambah Project</span>`;
-  addCard.addEventListener("click", () => {
-    if (addCard.classList.contains("active")) window.open(CONFIG.sheetsEditUrl, "_blank");
-  });
-  grid.appendChild(addCard);
 }
 
 function renderAISolutions() {
@@ -616,12 +605,12 @@ function renderRoadmap() {
       <div class="phase-marker">
         <span class="phase-number">${String(index + 1).padStart(2, "0")}</span>
       </div>
-      <div class="phase-content">
+      <a href="${item.Link || item.link || 'javascript:void(0)'}" class="phase-content" style="text-decoration:none; display:block; color:inherit;">
         <span class="phase-icon">${icon}</span>
         <h3>${title}</h3>
         <p>${desc}</p>
         <span class="phase-status ${statusClass}">${statusLabel}</span>
-      </div>
+      </a>
     `;
     container.appendChild(phaseItem);
   });
@@ -675,94 +664,14 @@ function renderEducation() {
         <p class="card-desc">${desc}</p>
       </div>
       <div class="card-footer">
-        <a href="#" class="read-more">Selengkapnya <span>→</span></a>
+        <a href="${item.Link || item.link || 'javascript:void(0)'}" class="read-more">Selengkapnya <span>→</span></a>
       </div>
     `;
     grid.appendChild(card);
-
-    // Modal click logic
-    const readMoreBtn = card.querySelector(".read-more");
-    readMoreBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      openEducationModal(item.detail_gambar, item.detail_teks);
-    });
-  });
-
-  const addCard = document.createElement("div");
-  addCard.className = "add-card fade-in";
-  addCard.innerHTML = `<div class="add-icon">+</div><span class="add-label">Tambah Materi</span>`;
-  addCard.addEventListener("click", () => {
-    if (addCard.classList.contains("active")) window.open(CONFIG.sheetsEditUrl, "_blank");
-  });
-  grid.appendChild(addCard);
-}
-
-// ============================================================
-// EDUCATION MODAL (POP-UP)
-// ============================================================
-function initEducationModal() {
-  const modal = document.getElementById("education-modal");
-  if(!modal) return;
-
-  document.getElementById("modal-close").addEventListener("click", closeModal);
-  document.getElementById("modal-overlay").addEventListener("click", closeModal);
-  
-  document.getElementById("modal-prev").addEventListener("click", () => {
-    if (activeModalSlide > 0) updateModalSlide(activeModalSlide - 1);
-  });
-  document.getElementById("modal-next").addEventListener("click", () => {
-    if (activeModalSlide < currentModalSlides.length - 1) updateModalSlide(activeModalSlide + 1);
   });
 }
 
-function closeModal() {
-  document.getElementById("education-modal").classList.remove("active");
-  document.body.style.overflow = "";
-}
 
-function openEducationModal(detailGambarRaw, detailTeksRaw) {
-  let images = detailGambarRaw ? detailGambarRaw.split(",").map(i => i.trim()).slice(0, 5) : [];
-  let texts = detailTeksRaw ? detailTeksRaw.split("---").map(t => t.trim()) : [];
-  
-  if (images.length === 0) images = [""]; // fallback
-
-  currentModalSlides = images;
-  currentModalTexts = texts;
-  
-  const track = document.getElementById("modal-track");
-  track.innerHTML = "";
-  images.forEach((img, i) => {
-    if(img) {
-      track.innerHTML += `<div class="modal-slide"><img src="${img}" alt="Detail Image ${i+1}" onerror="this.src=''" /></div>`;
-    } else {
-      track.innerHTML += `<div class="modal-slide"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1E3C2B;color:#F0E3D3;">No Image Available</div></div>`;
-    }
-  });
-
-  updateModalSlide(0);
-  document.getElementById("education-modal").classList.add("active");
-  document.body.style.overflow = "hidden"; // Prevent background scroll
-}
-
-function updateModalSlide(index) {
-  activeModalSlide = index;
-  document.getElementById("modal-track").style.transform = `translateX(-${index * 100}%)`;
-
-  const prevBtn = document.getElementById("modal-prev");
-  const nextBtn = document.getElementById("modal-next");
-  
-  prevBtn.style.display = index === 0 ? "none" : "flex";
-  nextBtn.style.display = index === currentModalSlides.length - 1 ? "none" : "flex";
-
-  if (currentModalSlides.length <= 1) {
-    prevBtn.style.display = "none";
-    nextBtn.style.display = "none";
-  }
-
-  // Handle text mismatch gracefully (use current slide text, or last available text)
-  const textContainer = document.getElementById("modal-text");
-  textContainer.innerHTML = currentModalTexts[index] || currentModalTexts[currentModalTexts.length - 1] || "Tidak ada detail teks.";
-}
 
 // ============================================================
 // LANGUAGE MODAL
