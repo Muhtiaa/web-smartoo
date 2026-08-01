@@ -74,12 +74,19 @@ function initLoginSystem() {
   const userPhone = document.getElementById('user-phone');
 
   btnVerify.addEventListener('click', async () => {
+    const phone = document.getElementById('phone-input').value.trim();
     const otpInputs = document.querySelectorAll('.otp-input');
     let otpValue = "";
     
     otpInputs.forEach(input => {
       otpValue += input.value;
     });
+
+    if (phone.length < 8) {
+      errorMsg.textContent = "Masukkan nomor WhatsApp yang valid.";
+      errorMsg.style.display = "block";
+      return;
+    }
 
     if (otpValue.length !== 6) {
       errorMsg.textContent = "Kode OTP harus 6 digit.";
@@ -96,7 +103,7 @@ function initLoginSystem() {
       const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-api', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ otp: otpValue }) // Tidak perlu kirim phone lagi
+        body: JSON.stringify({ phone: phone, otp: otpValue }) // Kirim phone dan otp kembali
       });
       
       const data = await response.json();
@@ -104,7 +111,7 @@ function initLoginSystem() {
       if (data.status === 'sukses') {
         loginSection.style.display = "none";
         dashboardSection.style.display = "block";
-        userPhone.textContent = "Pengguna SMART O²";
+        userPhone.textContent = phone;
         
         // Load Data Asli dari Webhook & Chart
         loadDashboardData(data);
