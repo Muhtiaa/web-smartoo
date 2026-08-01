@@ -198,6 +198,32 @@
       justify-content: center;
       width: 40px;
       height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+      margin-right: 15px;
+      border: 2px solid var(--text-dark);
+    }
+
+    @media (max-width: 768px) {
+      .product-hero-title { font-size: 2.5rem; }
+      details.brutal-accordion summary {
+        padding: 15px;
+        font-size: 1rem;
+      }
+      details.brutal-accordion .accordion-content {
+        padding: 0 15px 15px 15px; /* Hilangkan padding 75px di mobile agar tidak terpotong */
+      }
+      .step-number-circle {
+        margin-right: 10px;
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+      }
+      .mockup-professional { max-width: 300px; }
+      .product-section { padding: 40px 0; }
+    }
       background: #F47B20 !important; /* Paksa Bulatan Oranye */
       color: #FFFFFF !important; /* Paksa Teks Putih */
       border: 2px solid var(--text-dark);
