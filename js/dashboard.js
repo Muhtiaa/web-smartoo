@@ -1,265 +1,328 @@
-/* ============================================================
-   SMART O² — Dashboard Logic
-   Menangani OTP Login, Transisi UI, dan Render Grafik Chart.js
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-  initOTPInputs();
-  initLoginSystem();
-});
-
-// ============================================================
-// 1. OTP INPUT LOGIC
-// ============================================================
-function initOTPInputs() {
-  const inputs = document.querySelectorAll('.otp-input');
-  
-  inputs.forEach((input, index) => {
-    // Select text on focus
-    input.addEventListener('focus', (e) => {
-      e.target.select();
-    });
-
-    // Menangani Paste OTP (Tempel)
-    input.addEventListener('paste', (e) => {
-      e.preventDefault();
-      const pastedData = (e.clipboardData || window.clipboardData).getData('text');
-      const pastedNumbers = pastedData.replace(/[^0-9]/g, '').slice(0, 6); // Ambil hanya 6 angka pertama
-
-      if (pastedNumbers.length > 0) {
-        pastedNumbers.split('').forEach((char, i) => {
-          if (inputs[index + i]) {
-            inputs[index + i].value = char;
-            // Fokus otomatis ke kotak selanjutnya atau terakhir
-            if (i === pastedNumbers.length - 1 && inputs[index + i + 1]) {
-              inputs[index + i + 1].focus();
-            } else if (i === pastedNumbers.length - 1) {
-              inputs[index + i].blur();
-            }
-          }
-        });
-      }
-    });
-
-    input.addEventListener('keyup', (e) => {
-      const currentInput = input;
-      const nextInput = input.nextElementSibling;
-      const prevInput = input.previousElementSibling;
-
-      // Allow only numbers
-      currentInput.value = currentInput.value.replace(/[^0-9]/g, '');
-
-      // Move to next input on typing
-      if (currentInput.value.length > 0 && nextInput) {
-        nextInput.focus();
-      }
-      
-      // Move to previous input on backspace if current is empty
-      if (e.key === 'Backspace' && prevInput) {
-        prevInput.focus();
-      }
-    });
-  });
-}
-
-// ============================================================
-// 2. LOGIN & TRANSITION LOGIC
-// ============================================================
-function initLoginSystem() {
-  const btnVerify = document.getElementById('btn-verify');
-  const btnLogout = document.getElementById('btn-logout');
+document.addEventListener('DOMContentLoaded', () => {
   const loginSection = document.getElementById('login-section');
   const dashboardSection = document.getElementById('dashboard-section');
-  const errorMsg = document.getElementById('login-error');
-  const userPhone = document.getElementById('user-phone');
+  
+  const phoneInput = document.getElementById('login-phone');
+  const otpInput = document.getElementById('login-otp');
+  const btnLogin = document.getElementById('btn-login');
+  const loginError = document.getElementById('login-error');
 
-  btnVerify.addEventListener('click', async () => {
-    const phone = document.getElementById('phone-input').value.trim();
-    const otpInputs = document.querySelectorAll('.otp-input');
-    let otpValue = "";
-    
-    otpInputs.forEach(input => {
-      otpValue += input.value;
-    });
+  const btnLogoutSidebar = document.getElementById('btn-logout-sidebar');
+  const btnLogoutMobile = document.getElementById('btn-logout-mobile');
+
+  // DOM Elements for Dashboard
+  const userGreeting = document.getElementById('user-greeting');
+  const currentDate = document.getElementById('current-date');
+  const valSaldo = document.getElementById('val-saldo');
+  const valPemasukan = document.getElementById('val-pemasukan');
+  const valPengeluaran = document.getElementById('val-pengeluaran');
+  const valUtang = document.getElementById('val-utang');
+  const valPiutang = document.getElementById('val-piutang');
+  const tableBody = document.getElementById('table-body');
+
+  // Modal Elements
+  const modal = document.getElementById('crud-modal');
+  const btnCatat = document.getElementById('btn-catat-transaksi');
+  const btnCloseModal = document.getElementById('btn-close-modal');
+  const crudForm = document.getElementById('crud-form');
+  const modalTitle = document.getElementById('modal-title');
+  const btnSaveCrud = document.getElementById('btn-save-crud');
+  const crudError = document.getElementById('crud-error');
+
+  // Format IDR
+  const formatRp = (num) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+  };
+
+  // Set Tanggal Hari Ini
+  const today = new Date();
+  const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  currentDate.textContent = today.toLocaleDateString('en-GB', options);
+
+  // --- SESI LOGIN (localStorage) ---
+  const checkSession = async () => {
+    const savedPhone = localStorage.getItem('smartoo_phone');
+    const savedOtp = localStorage.getItem('smartoo_otp');
+
+    if (savedPhone && savedOtp) {
+      // Sesi ada, langsung coba fetch data
+      loginSection.style.display = 'none';
+      dashboardSection.style.display = 'block';
+      await fetchDashboardData(savedPhone, savedOtp);
+    } else {
+      // Tidak ada sesi, tampilkan login
+      loginSection.style.display = 'flex';
+      dashboardSection.style.display = 'none';
+    }
+  };
+
+  const handleLogout = (e) => {
+    if (e) e.preventDefault();
+    localStorage.removeItem('smartoo_phone');
+    localStorage.removeItem('smartoo_otp');
+    localStorage.removeItem('smartoo_id_wa');
+    window.location.reload();
+  };
+
+  if (btnLogoutSidebar) btnLogoutSidebar.addEventListener('click', handleLogout);
+  if (btnLogoutMobile) btnLogoutMobile.addEventListener('click', handleLogout);
+
+  // --- LOGIN PROCESS ---
+  btnLogin.addEventListener('click', async () => {
+    const phone = phoneInput.value.trim();
+    const otp = otpInput.value.trim();
 
     if (phone.length < 8) {
-      errorMsg.textContent = "Masukkan nomor WhatsApp yang valid.";
-      errorMsg.style.display = "block";
+      loginError.textContent = "Nomor WA tidak valid.";
+      loginError.style.display = "block";
+      return;
+    }
+    if (otp.length !== 6) {
+      loginError.textContent = "OTP harus 6 digit.";
+      loginError.style.display = "block";
       return;
     }
 
-    if (otpValue.length !== 6) {
-      errorMsg.textContent = "Kode OTP harus 6 digit.";
-      errorMsg.style.display = "block";
-      return;
+    btnLogin.textContent = "Memverifikasi...";
+    loginError.style.display = "none";
+
+    // Simpan ke localStorage sementara (akan dihapus kalau gagal)
+    localStorage.setItem('smartoo_phone', phone);
+    localStorage.setItem('smartoo_otp', otp);
+
+    const success = await fetchDashboardData(phone, otp);
+    
+    if (success) {
+      loginSection.style.display = "none";
+      dashboardSection.style.display = "block";
+    } else {
+      btnLogin.textContent = "MASUK DASHBOARD";
+      localStorage.removeItem('smartoo_phone');
+      localStorage.removeItem('smartoo_otp');
     }
+  });
 
-    // MELAKUKAN API CALL KE N8N WEBHOOK
-    btnVerify.textContent = "Memverifikasi...";
-    btnVerify.style.opacity = "0.7";
-    errorMsg.style.display = "none";
-
+  // --- FETCH DATA DARI API ---
+  const fetchDashboardData = async (phone, otp) => {
     try {
       const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-api', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phone, otp: otpValue }) // Kirim phone dan otp kembali
+        body: JSON.stringify({ phone: phone, otp: otp })
       });
       
       const data = await response.json();
       
       if (data.status === 'sukses') {
-        loginSection.style.display = "none";
-        dashboardSection.style.display = "block";
-        userPhone.textContent = phone;
-        
-        // Load Data Asli dari Webhook & Chart
-        loadDashboardData(data);
+        // Simpan id_whatsapp (format @lid) untuk keperluan CRUD
+        if (data.id_whatsapp) {
+          localStorage.setItem('smartoo_id_wa', data.id_whatsapp);
+        }
+        renderDashboard(data);
+        return true;
       } else {
-        errorMsg.textContent = data.message || "Gagal masuk. Periksa kembali OTP Anda.";
-        errorMsg.style.display = "block";
+        if (loginError) {
+          loginError.textContent = data.message || "OTP Salah atau Tidak Ditemukan!";
+          loginError.style.display = "block";
+        } else {
+          alert("Sesi berakhir, silakan login ulang.");
+          handleLogout();
+        }
+        return false;
       }
     } catch (error) {
-      errorMsg.textContent = "Terjadi kesalahan koneksi server.";
-      errorMsg.style.display = "block";
-    } finally {
-      btnVerify.textContent = "Verifikasi OTP";
-      btnVerify.style.opacity = "1";
+      console.error(error);
+      if (loginError) {
+        loginError.textContent = "Terjadi kesalahan koneksi server.";
+        loginError.style.display = "block";
+      }
+      return false;
     }
-  });
-
-  btnLogout.addEventListener('click', () => {
-    // Reset form
-    document.getElementById('phone-input').value = "";
-    document.querySelectorAll('.otp-input').forEach(i => i.value = "");
-    btnVerify.textContent = "Verifikasi OTP";
-    btnVerify.style.opacity = "1";
-    
-    // Switch views
-    dashboardSection.style.display = "none";
-    loginSection.style.display = "flex";
-  });
-}
-
-// ============================================================
-// 3. DASHBOARD DATA & CHART RENDER
-// ============================================================
-function formatRupiah(number) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0
-  }).format(number);
-}
-
-function loadDashboardData(apiData) {
-  // Menggunakan data asli dari API
-  const data = apiData || {
-    metrics: { income: 0, expense: 0, balance: 0, debt: 0 },
-    activities: [],
-    chartData: [{ label: "Bulan Ini", income: 0, expense: 0 }]
   };
 
-  // 1. Update Metrics UI
-  document.getElementById('val-income').textContent = formatRupiah(data.metrics.income);
-  document.getElementById('val-expense').textContent = formatRupiah(data.metrics.expense);
-  document.getElementById('val-balance').textContent = formatRupiah(data.metrics.balance);
-  document.getElementById('val-debt').textContent = formatRupiah(data.metrics.debt);
+  // --- RENDER DASHBOARD ---
+  let pieChartObj = null;
+  let lineChartObj = null;
 
-  // 2. Render Activities
-  const actList = document.getElementById('activity-list');
-  actList.innerHTML = "";
-  
-  if (data.activities && data.activities.length > 0) {
-    data.activities.forEach(act => {
-      const li = document.createElement("li");
-      li.className = "activity-item";
-      
-      const sign = act.type === "income" ? "+" : "-";
-      const amountClass = act.type === "income" ? "income" : "expense";
-      
-      li.innerHTML = `
-        <div>
-          <div class="act-desc">${act.desc}</div>
-          <div class="act-date">${act.date}</div>
-        </div>
-        <div class="act-amount ${amountClass}">
-          ${sign} ${formatRupiah(act.amount)}
-        </div>
-      `;
-      actList.appendChild(li);
-    });
-  } else {
-    actList.innerHTML = "<li style='padding:15px; text-align:center;'>Belum ada riwayat transaksi.</li>";
-  }
+  const renderDashboard = (data) => {
+    const metrics = data.metrics || { income: 0, expense: 0, balance: 0, debt: 0, piutang: 0 };
+    const activities = data.activities || [];
+    const nama = data.nama_pengguna || "Pengguna";
 
-  // 3. Render Chart.js
-  if (data.chartData) {
-    renderChart(data.chartData);
-  }
-}
+    userGreeting.textContent = `Halo, ${nama}`;
+    valSaldo.textContent = formatRp(metrics.balance);
+    valPemasukan.textContent = formatRp(metrics.income);
+    valPengeluaran.textContent = formatRp(metrics.expense);
+    valUtang.textContent = formatRp(metrics.debt);
+    valPiutang.textContent = formatRp(metrics.piutang || 0);
 
-function renderChart(data) {
-  const ctx = document.getElementById('mainChart').getContext('2d');
-  
-  // Hancurkan chart lama jika ada (mencegah bug re-render)
-  if (window.myDashboardChart) {
-    window.myDashboardChart.destroy();
-  }
+    // Render Table
+    tableBody.innerHTML = '';
+    if (activities.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada aktivitas.</td></tr>`;
+    } else {
+      activities.forEach(act => {
+        const isIncome = act.jenis_transaksi === 'Pemasukan';
+        const color = isIncome ? '#27ae60' : '#c0392b';
+        const symbol = isIncome ? '+' : '-';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${act.tanggal} <br><small>${act.waktu}</small></td>
+          <td><strong>${act.keterangan}</strong></td>
+          <td>${act.kategori}</td>
+          <td style="color:${color}; font-weight:bold;">${symbol} ${formatRp(act.nominal)}</td>
+          <td>
+            <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')" title="Hapus"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
 
-  const labels = data.map(d => d.label);
-  const incomeData = data.map(d => d.income);
-  const expenseData = data.map(d => d.expense);
+    // Render Charts
+    renderCharts(metrics, data.chartData);
+  };
 
-  // Desain Brutalism untuk grafik
-  window.myDashboardChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Pemasukan',
-          data: incomeData,
-          backgroundColor: '#1E8E3E', // Hijau Google
-          borderColor: '#000',
-          borderWidth: 2,
-          borderRadius: 0 // Tajam
-        },
-        {
-          label: 'Pengeluaran',
-          data: expenseData,
-          backgroundColor: '#D93025', // Merah Google
-          borderColor: '#000',
-          borderWidth: 2,
-          borderRadius: 0 // Tajam
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'top',
-          labels: { font: { family: 'inherit', weight: 'bold' }, color: '#000' }
-        },
-        tooltip: {
-          backgroundColor: '#000',
-          titleFont: { family: 'inherit', size: 14 },
-          bodyFont: { family: 'inherit', size: 13, weight: 'bold' },
-          cornerRadius: 0 // Tajam
-        }
+  const renderCharts = (metrics, chartData) => {
+    // Destroy old charts if exist
+    if (pieChartObj) pieChartObj.destroy();
+    if (lineChartObj) lineChartObj.destroy();
+
+    // Pie Chart
+    const ctxPie = document.getElementById('pieChart').getContext('2d');
+    pieChartObj = new Chart(ctxPie, {
+      type: 'doughnut',
+      data: {
+        labels: ['Pemasukan', 'Pengeluaran'],
+        datasets: [{
+          data: [metrics.income, metrics.expense],
+          backgroundColor: ['#27ae60', '#c0392b'],
+          borderWidth: 2
+        }]
       },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { font: { weight: 'bold' }, color: '#000' }
-        },
-        y: {
-          border: { display: true, width: 2, color: '#000' },
-          grid: { color: '#ccc', drawBorder: false },
-          ticks: { font: { weight: 'bold' }, color: '#000' }
-        }
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // Line Chart (Dummy / basic for now until backend provides daily array)
+    const ctxLine = document.getElementById('lineChart').getContext('2d');
+    const labels = chartData ? chartData.map(d => d.label) : ['Awal Bulan', 'Pertengahan', 'Sekarang'];
+    const dataIncome = chartData ? chartData.map(d => d.income) : [0, metrics.income/2, metrics.income];
+    const dataExpense = chartData ? chartData.map(d => d.expense) : [0, metrics.expense/2, metrics.expense];
+
+    lineChartObj = new Chart(ctxLine, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Pemasukan', data: dataIncome, borderColor: '#27ae60', tension: 0.3 },
+          { label: 'Pengeluaran', data: dataExpense, borderColor: '#c0392b', tension: 0.3 }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  };
+
+  // --- CRUD MODAL LOGIC ---
+  btnCatat.addEventListener('click', () => {
+    document.getElementById('form-action').value = "tambah";
+    document.getElementById('form-id').value = "";
+    crudForm.reset();
+    modalTitle.textContent = "Catat Transaksi";
+    crudError.style.display = "none";
+    modal.style.display = "flex";
+  });
+
+  btnCloseModal.addEventListener('click', () => {
+    modal.style.display = "none";
+  });
+
+  // Handle Form Submit
+  crudForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const action = document.getElementById('form-action').value;
+    const id_transaksi = document.getElementById('form-id').value;
+    const jenis = document.getElementById('form-jenis').value;
+    const keterangan = document.getElementById('form-keterangan').value;
+    const kategori = document.getElementById('form-kategori').value;
+    const nominal = document.getElementById('form-nominal').value;
+    const tag = document.getElementById('form-tag').value;
+
+    const id_whatsapp = localStorage.getItem('smartoo_id_wa');
+    if (!id_whatsapp) {
+      alert("Sesi tidak valid, harap login ulang.");
+      return;
+    }
+
+    const payload = {
+      action: action,
+      id_whatsapp: id_whatsapp,
+      id_transaksi: id_transaksi,
+      jenis_transaksi: jenis,
+      keterangan: keterangan,
+      kategori: kategori,
+      nominal: parseInt(nominal),
+      tag_status: tag
+    };
+
+    btnSaveCrud.textContent = "Menyimpan...";
+    try {
+      const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-crud', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const resData = await response.json();
+      
+      if (resData.status === 'sukses') {
+        modal.style.display = "none";
+        // Refresh Dashboard Data
+        const phone = localStorage.getItem('smartoo_phone');
+        const otp = localStorage.getItem('smartoo_otp');
+        await fetchDashboardData(phone, otp);
+      } else {
+        crudError.textContent = resData.message || "Gagal menyimpan data.";
+        crudError.style.display = "block";
       }
+    } catch (err) {
+      crudError.textContent = "Terjadi kesalahan koneksi.";
+      crudError.style.display = "block";
+    } finally {
+      btnSaveCrud.textContent = "SIMPAN TRANSAKSI";
     }
   });
-}
+
+  // Fungsi Global untuk Edit & Hapus (dipanggil dari button onclick di tabel)
+  window.editData = (id) => {
+    // Fitur edit simpel: alert for now, real implementation requires fetching single data
+    alert(`Fitur edit untuk ID: ${id} akan segera tersedia setelah Webhook dikonfigurasi sepenuhnya!`);
+  };
+
+  window.hapusData = async (id) => {
+    const confirmDelete = confirm("Apakah Anda yakin ingin menghapus transaksi ini?");
+    if (!confirmDelete) return;
+
+    const id_whatsapp = localStorage.getItem('smartoo_id_wa');
+    try {
+      const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-crud', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'hapus', id_transaksi: id, id_whatsapp: id_whatsapp })
+      });
+      const resData = await response.json();
+      if (resData.status === 'sukses') {
+        const phone = localStorage.getItem('smartoo_phone');
+        const otp = localStorage.getItem('smartoo_otp');
+        await fetchDashboardData(phone, otp); // Refresh table
+      } else {
+        alert(resData.message || "Gagal menghapus data.");
+      }
+    } catch(err) {
+      alert("Terjadi kesalahan koneksi saat menghapus.");
+    }
+  };
+
+  // INIT
+  checkSession();
+});
