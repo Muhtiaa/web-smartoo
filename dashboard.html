@@ -1,317 +1,614 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Dashboard | SMART O²</title>
   
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Stylesheet Utama (Brutalism) -->
-  <link rel="stylesheet" href="css/style.css" />
-  
-  <!-- Chart.js untuk Grafik -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* Styling khusus Dashboard & Login */
-    body {
-      background-color: var(--bg-primary); /* Krem */
-      font-family: inherit;
+    :root {
+      --primary: #1b3c35;
+      --accent: #e67e22;
+      --bg: #f4f6f8;
+      --text: #333333;
+      --card-bg: #ffffff;
+      --border: 2px solid #000000;
+      --shadow: 4px 4px 0px #000000;
     }
 
-    .dashboard-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 40px 20px;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
     }
 
     /* --- LOGIN SECTION --- */
     #login-section {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg);
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 80vh;
+      z-index: 9999;
     }
 
-    .login-card {
-      display: flex;
-      flex-wrap: wrap;
-      background: #fff;
-      border: 4px solid var(--text-dark);
-      box-shadow: 12px 12px 0 var(--text-dark);
-      width: 100%;
-      max-width: 900px;
+    .login-box {
+      background: var(--card-bg);
+      border: var(--border);
+      box-shadow: 8px 8px 0px #000;
       padding: 40px;
-      gap: 40px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      border-radius: 8px;
     }
 
-    .login-left {
-      flex: 1;
-      min-width: 300px;
-    }
-
-    .login-left h2 {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .login-box img {
+      width: 80px;
       margin-bottom: 20px;
-      font-size: 2rem;
     }
 
-    .login-left h2 img {
-      width: 40px;
+    .login-box h2 {
+      margin-bottom: 10px;
+      color: var(--primary);
     }
 
-    .login-steps {
-      list-style: none;
-      padding: 0;
-      line-height: 1.8;
-      margin-bottom: 30px;
+    .login-box p {
+      font-size: 0.9rem;
+      margin-bottom: 20px;
     }
 
-    .login-steps li {
+    .input-group {
       margin-bottom: 15px;
+      text-align: left;
     }
 
-    .login-right {
-      flex: 1;
-      min-width: 300px;
+    .input-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 0.9rem;
+    }
+
+    .retro-input {
+      width: 100%;
+      padding: 12px;
+      border: var(--border);
+      border-radius: 4px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .retro-input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: white;
+      border: var(--border);
+      box-shadow: var(--shadow);
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+
+    .btn-login:active {
+      transform: translate(4px, 4px);
+      box-shadow: 0 0 0 #000;
+    }
+
+    .error-msg {
+      color: red;
+      font-size: 0.9rem;
+      margin-top: 15px;
+      display: none;
+      font-weight: bold;
+    }
+
+    /* --- DASHBOARD LAYOUT --- */
+    #dashboard-section {
+      display: none; /* Hidden by default */
+      width: 100%;
+      height: 100%;
+    }
+
+    .wrapper {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* SIDEBAR (Desktop) */
+    .sidebar {
+      width: 250px;
+      background: var(--primary);
+      color: white;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      background: var(--bg-secondary);
-      border: 4px solid var(--text-dark);
-      padding: 30px;
+      border-right: var(--border);
+      flex-shrink: 0;
     }
 
-    .otp-container {
-      display: flex;
-      gap: 10px;
-      margin: 20px 0;
-    }
-
-    .otp-input {
-      width: 50px;
-      height: 60px;
-      font-size: 24px;
-      font-weight: 900;
-      text-align: center;
-      border: 3px solid var(--text-dark);
-      background: #fff;
-      transition: all 0.2s;
-    }
-
-    .otp-input:focus {
-      outline: none;
-      background: var(--primary);
-      box-shadow: 4px 4px 0 var(--text-dark);
-    }
-
-    .phone-input {
-      width: 100%;
-      padding: 15px;
-      font-size: 1.2rem;
-      border: 3px solid var(--text-dark);
+    .sidebar-brand {
+      padding: 20px;
+      font-size: 1.5rem;
       font-weight: bold;
-      margin-bottom: 20px;
-      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .btn-verify {
-      width: 100%;
-      font-size: 1.2rem;
-      padding: 15px;
+    .sidebar-brand img {
+      width: 30px;
     }
 
-    /* --- DASHBOARD SECTION --- */
-    #dashboard-section {
-      display: none; /* Disembunyikan awalnya */
+    .nav-links {
+      flex-grow: 1;
+      padding: 20px 0;
+      list-style: none;
     }
 
-    .dash-header {
+    .nav-links li {
+      margin-bottom: 5px;
+    }
+
+    .nav-links a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border-left: 4px solid var(--accent);
+    }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 30px;
+      background: var(--bg);
+      padding-bottom: 100px; /* For mobile nav */
+    }
+
+    /* HEADER */
+    .dashboard-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 40px;
-      border-bottom: 4px solid var(--text-dark);
-      padding-bottom: 20px;
+      margin-bottom: 30px;
     }
 
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-bottom: 40px;
+    .greeting h1 {
+      font-size: 1.8rem;
+      color: var(--primary);
     }
 
-    .metric-card {
-      background: #fff;
-      border: 4px solid var(--text-dark);
-      box-shadow: 6px 6px 0 var(--text-dark);
-      padding: 20px;
+    .greeting p {
+      color: #666;
+      font-size: 0.9rem;
     }
 
-    .metric-title {
-      font-size: 1rem;
+    .header-actions button {
+      padding: 10px 20px;
+      background: var(--accent);
+      color: white;
+      border: var(--border);
+      box-shadow: 2px 2px 0 #000;
       font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .header-actions button:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0 0 0 #000;
+    }
+
+    /* SUMMARY CARDS */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
       color: #666;
       margin-bottom: 10px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
     }
 
-    .metric-value {
-      font-size: 2rem;
-      font-weight: 900;
-      color: var(--text-dark);
+    .card-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary);
     }
 
-    .metric-value.income { color: #1E8E3E; }
-    .metric-value.expense { color: #D93025; }
+    .card-saldo .card-value { color: var(--primary); }
+    .card-masuk .card-value { color: #27ae60; }
+    .card-keluar .card-value { color: #c0392b; }
+    .card-utang .card-value { color: #e67e22; }
+    .card-piutang .card-value { color: #2980b9; }
 
+    /* CHARTS SECTION */
     .charts-grid {
       display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 30px;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
     }
 
     @media (max-width: 900px) {
       .charts-grid { grid-template-columns: 1fr; }
     }
 
-    .chart-card {
-      background: #fff;
-      border: 4px solid var(--text-dark);
-      box-shadow: 6px 6px 0 var(--text-dark);
+    .chart-box {
+      background: var(--card-bg);
+      border: var(--border);
+      border-radius: 8px;
       padding: 20px;
+      box-shadow: var(--shadow);
     }
 
-    .chart-card h3 {
-      border-bottom: 2px solid var(--text-dark);
+    .chart-box h3 {
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      border-bottom: 2px solid #eee;
       padding-bottom: 10px;
+    }
+
+    /* TABLE SECTION */
+    .table-container {
+      background: var(--card-bg);
+      border: var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      font-weight: bold;
+      color: #666;
+    }
+
+    .btn-action {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0 5px;
+    }
+    .btn-edit { color: #2980b9; }
+    .btn-delete { color: #c0392b; }
+
+    /* BOTTOM NAV (Mobile) */
+    .bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--primary);
+      border-top: var(--border);
+      z-index: 100;
+    }
+
+    .bottom-nav ul {
+      display: flex;
+      justify-content: space-around;
+      list-style: none;
+      padding: 10px 0;
+    }
+
+    .bottom-nav a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.7rem;
+      gap: 5px;
+    }
+
+    .bottom-nav a.active {
+      color: var(--accent);
+    }
+
+    .bottom-nav i {
+      font-size: 1.2rem;
+    }
+
+    /* MODAL CRUD */
+    .modal {
+      display: none;
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.5);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-content {
+      background: #fff;
+      border: var(--border);
+      box-shadow: 8px 8px 0px #000;
+      padding: 30px;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 8px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 20px;
     }
 
-    .activity-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
     }
 
-    .activity-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 15px 0;
-      border-bottom: 2px dashed #ccc;
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .bottom-nav { display: block; }
+      .main-content { padding: 15px; padding-bottom: 80px; }
+      .summary-grid { grid-template-columns: 1fr 1fr; }
     }
-    .activity-item:last-child {
-      border-bottom: none;
-    }
-    .act-desc { font-weight: bold; }
-    .act-date { font-size: 0.8rem; color: #666; }
-    .act-amount.income { color: #1E8E3E; font-weight: bold;}
-    .act-amount.expense { color: #D93025; font-weight: bold;}
-
   </style>
 </head>
 <body>
 
-  <div class="dashboard-container">
-    
-    <!-- ================= LOGIN SECTION ================= -->
-    <div id="login-section">
-      <div class="login-card fade-in">
-        <div class="login-left">
-          <h2>
-            <img src="assets/logo.png" alt="Logo">
-            SMART O²
-          </h2>
-          <h3 style="margin-bottom: 15px;">Langkah Login:</h3>
-          <ul class="login-steps">
-            <li>1. Kirim pesan <strong>/login</strong> ke bot WhatsApp SMART O².</li>
-            <li>2. Bot akan membalas dengan 6 digit kode OTP rahasia.</li>
-            <li>3. Masukkan Nomor WhatsApp Anda dan kode OTP tersebut di samping.</li>
-            <li>4. Tunggu konfirmasi login dan sistem akan memuat data Anda.</li>
-          </ul>
-          <a href="asisten-catatan-keuangan.html" class="btn btn-outline">← Kembali ke Produk</a>
+  <!-- ================= LOGIN SECTION ================= -->
+  <div id="login-section">
+    <div class="login-box">
+      <img src="assets/logo.png" alt="SMART O2" onerror="this.src='https://via.placeholder.com/80'">
+      <h2>SMART O² Login</h2>
+      <p>Masuk untuk mengelola keuangan Anda</p>
+      
+      <div class="input-group">
+        <label>Nomor WhatsApp</label>
+        <input type="text" id="login-phone" class="retro-input" placeholder="0812...">
+      </div>
+      
+      <div class="input-group">
+        <label>Kode OTP (6 Digit)</label>
+        <input type="text" id="login-otp" class="retro-input" placeholder="XXXXXX" maxlength="6">
+      </div>
+
+      <button id="btn-login" class="btn-login">MASUK DASHBOARD</button>
+      <div id="login-error" class="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- ================= DASHBOARD SECTION ================= -->
+  <div id="dashboard-section">
+    <div class="wrapper">
+      
+      <!-- SIDEBAR DESKTOP -->
+      <nav class="sidebar">
+        <div class="sidebar-brand">
+          <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'">
+          SMART O²
         </div>
-        
-        <div class="login-right">
-          <h3>Verifikasi Keamanan</h3>
-          <p style="margin-bottom: 20px; font-size:0.9rem;">Hanya nomor yang terdaftar di database yang bisa mengakses ini.</p>
-          
-          <input type="text" id="phone-input" class="phone-input" placeholder="081234567890" />
-          
-          <div style="font-weight: bold; margin-bottom: 5px;">Masukkan Kode OTP</div>
-          <div class="otp-container" id="otp-inputs">
-            <input type="text" class="otp-input" maxlength="1" />
-            <input type="text" class="otp-input" maxlength="1" />
-            <input type="text" class="otp-input" maxlength="1" />
-            <input type="text" class="otp-input" maxlength="1" />
-            <input type="text" class="otp-input" maxlength="1" />
-            <input type="text" class="otp-input" maxlength="1" />
+        <ul class="nav-links">
+          <li><a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+          <li><a href="#"><i class="fas fa-exchange-alt"></i> Transaksi</a></li>
+          <li><a href="#"><i class="fas fa-wallet"></i> Dompet</a></li>
+          <li><a href="#"><i class="fas fa-tags"></i> Kategori</a></li>
+          <li><a href="#"><i class="fas fa-file-export"></i> Export</a></li>
+          <li><a href="#"><i class="fas fa-cog"></i> Pengaturan</a></li>
+        </ul>
+        <div class="sidebar-footer">
+          <a href="#" id="btn-logout-sidebar" style="color:#e74c3c; text-decoration:none; display:flex; align-items:center; gap:10px;"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+        </div>
+      </nav>
+
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+        <!-- Header -->
+        <header class="dashboard-header">
+          <div class="greeting">
+            <h1 id="user-greeting">Halo, Pengguna</h1>
+            <p id="current-date">01 Aug 2026</p>
           </div>
-          
-          <button id="btn-verify" class="btn btn-primary btn-verify" style="background:var(--text-dark); color:white;">
-            Verifikasi OTP
-          </button>
-          
-          <div id="login-error" style="color:red; margin-top:15px; font-weight:bold; display:none;">OTP Salah. Silakan coba lagi.</div>
+          <div class="header-actions">
+            <button id="btn-catat-transaksi"><i class="fas fa-plus"></i> Catat Transaksi</button>
+          </div>
+        </header>
+
+        <!-- Summary Cards (5 Cards) -->
+        <div class="summary-grid">
+          <div class="card card-saldo">
+            <div class="card-title">Total Saldo <i class="fas fa-wallet"></i></div>
+            <div class="card-value" id="val-saldo">Rp 0</div>
+          </div>
+          <div class="card card-masuk">
+            <div class="card-title">Pemasukan <i class="fas fa-arrow-down"></i></div>
+            <div class="card-value" id="val-pemasukan">Rp 0</div>
+          </div>
+          <div class="card card-keluar">
+            <div class="card-title">Pengeluaran <i class="fas fa-arrow-up"></i></div>
+            <div class="card-value" id="val-pengeluaran">Rp 0</div>
+          </div>
+          <div class="card card-utang">
+            <div class="card-title">Utang <i class="fas fa-hand-holding-usd"></i></div>
+            <div class="card-value" id="val-utang">Rp 0</div>
+          </div>
+          <div class="card card-piutang">
+            <div class="card-title">Piutang <i class="fas fa-handshake"></i></div>
+            <div class="card-value" id="val-piutang">Rp 0</div>
+          </div>
         </div>
-      </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+          <div class="chart-box">
+            <h3>Pemasukan vs Pengeluaran</h3>
+            <canvas id="pieChart"></canvas>
+          </div>
+          <div class="chart-box">
+            <h3>Pergerakan Harian (Bulan Ini)</h3>
+            <canvas id="lineChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Tabel Aktivitas Terbaru -->
+        <div class="table-container">
+          <div class="table-header">
+            <h3>Aktivitas Terbaru</h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Keterangan</th>
+                <th>Kategori</th>
+                <th>Nominal</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+
     </div>
+  </div>
 
-    <!-- ================= DASHBOARD SECTION ================= -->
-    <div id="dashboard-section">
-      <div class="dash-header fade-in">
-        <div>
-          <h2 style="font-size:2.5rem; margin-bottom:5px;">Dashboard Keuangan</h2>
-          <p>Selamat datang, <span id="user-phone" style="font-weight:bold; background:var(--primary); padding:2px 8px;">User</span></p>
-        </div>
-        <button id="btn-logout" class="btn btn-outline">Keluar</button>
+  <!-- ================= BOTTOM NAV MOBILE ================= -->
+  <nav class="bottom-nav">
+    <ul>
+      <li><a href="#" class="active"><i class="fas fa-home"></i> Beranda</a></li>
+      <li><a href="#"><i class="fas fa-exchange-alt"></i> Transaksi</a></li>
+      <li><a href="#" id="btn-logout-mobile" style="color:#e74c3c;"><i class="fas fa-sign-out-alt"></i> Keluar</a></li>
+    </ul>
+  </nav>
+
+  <!-- ================= MODAL CRUD ================= -->
+  <div id="crud-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Catat Transaksi</h2>
+        <button class="close-modal" id="btn-close-modal">&times;</button>
       </div>
-
-      <!-- Metrics -->
-      <div class="metric-grid fade-in">
-        <div class="metric-card">
-          <div class="metric-title">💰 Pemasukan (Bulan Ini)</div>
-          <div class="metric-value income" id="val-income">Rp 0</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-title">💸 Pengeluaran (Bulan Ini)</div>
-          <div class="metric-value expense" id="val-expense">Rp 0</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-title">🏦 Saldo Dompet</div>
-          <div class="metric-value" id="val-balance">Rp 0</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-title">💳 Total Hutang</div>
-          <div class="metric-value expense" id="val-debt">Rp 0</div>
-        </div>
-      </div>
-
-      <!-- Charts & Activities -->
-      <div class="charts-grid fade-in">
-        <div class="chart-card">
-          <h3>Perbandingan Pemasukan vs Pengeluaran</h3>
-          <canvas id="mainChart" height="200"></canvas>
+      <form id="crud-form">
+        <input type="hidden" id="form-action" value="tambah">
+        <input type="hidden" id="form-id" value="">
+        
+        <div class="input-group">
+          <label>Jenis Transaksi</label>
+          <select id="form-jenis" class="retro-input" required>
+            <option value="Pengeluaran">Pengeluaran</option>
+            <option value="Pemasukan">Pemasukan</option>
+          </select>
         </div>
         
-        <div class="chart-card">
-          <h3>Aktivitas Terbaru</h3>
-          <ul class="activity-list" id="activity-list">
-            <!-- Rendered by JS -->
-          </ul>
+        <div class="input-group">
+          <label>Keterangan</label>
+          <input type="text" id="form-keterangan" class="retro-input" placeholder="Makan siang..." required>
         </div>
-      </div>
-    </div>
+        
+        <div class="input-group">
+          <label>Kategori</label>
+          <input type="text" id="form-kategori" class="retro-input" placeholder="Makanan" required>
+        </div>
+        
+        <div class="input-group">
+          <label>Nominal (Rp)</label>
+          <input type="number" id="form-nominal" class="retro-input" placeholder="50000" required>
+        </div>
+        
+        <div class="input-group">
+          <label>Tag Khusus (Opsional)</label>
+          <select id="form-tag" class="retro-input">
+            <option value="">Tidak ada</option>
+            <option value="Utang">Utang (Pinjam uang)</option>
+            <option value="Piutang">Piutang (Memberi pinjaman)</option>
+          </select>
+        </div>
 
+        <button type="submit" class="btn-login" id="btn-save-crud">SIMPAN TRANSAKSI</button>
+        <div id="crud-error" class="error-msg"></div>
+      </form>
+    </div>
   </div>
 
   <script src="js/dashboard.js"></script>
