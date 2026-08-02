@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // View Routing Elements
   const navDashboard = document.getElementById('nav-dashboard');
   const navTransaksi = document.getElementById('nav-transaksi');
+  const navDashboardMobile = document.getElementById('nav-dashboard-mobile');
+  const navTransaksiMobile = document.getElementById('nav-transaksi-mobile');
   const viewDashboard = document.getElementById('view-dashboard');
   const viewTransaksi = document.getElementById('view-transaksi');
 
@@ -476,23 +478,33 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ================= ROUTING & FILTER TRANSAKSI =================
-  if (navDashboard && navTransaksi && viewDashboard && viewTransaksi) {
-    navDashboard.addEventListener('click', (e) => {
-      e.preventDefault();
-      navDashboard.classList.add('active');
-      navTransaksi.classList.remove('active');
-      viewDashboard.style.display = 'block';
-      viewTransaksi.style.display = 'none';
-    });
-
-    navTransaksi.addEventListener('click', (e) => {
-      e.preventDefault();
-      navTransaksi.classList.add('active');
-      navDashboard.classList.remove('active');
+  const switchView = (toTransaksi) => {
+    if (toTransaksi) {
+      if (navDashboard) navDashboard.classList.remove('active');
+      if (navDashboardMobile) navDashboardMobile.classList.remove('active');
+      if (navTransaksi) navTransaksi.classList.add('active');
+      if (navTransaksiMobile) navTransaksiMobile.classList.add('active');
+      
       viewDashboard.style.display = 'none';
       viewTransaksi.style.display = 'block';
       applyFilters(); 
-    });
+    } else {
+      if (navDashboard) navDashboard.classList.add('active');
+      if (navDashboardMobile) navDashboardMobile.classList.add('active');
+      if (navTransaksi) navTransaksi.classList.remove('active');
+      if (navTransaksiMobile) navTransaksiMobile.classList.remove('active');
+      
+      viewDashboard.style.display = 'block';
+      viewTransaksi.style.display = 'none';
+    }
+  };
+
+  if (viewDashboard && viewTransaksi) {
+    if (navDashboard) navDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView(false); });
+    if (navDashboardMobile) navDashboardMobile.addEventListener('click', (e) => { e.preventDefault(); switchView(false); });
+    
+    if (navTransaksi) navTransaksi.addEventListener('click', (e) => { e.preventDefault(); switchView(true); });
+    if (navTransaksiMobile) navTransaksiMobile.addEventListener('click', (e) => { e.preventDefault(); switchView(true); });
   }
 
   const applyFilters = () => {
