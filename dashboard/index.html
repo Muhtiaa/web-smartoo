@@ -613,11 +613,21 @@
                 <label style="font-size:0.8rem; font-weight:bold; color:#666;">Rentang Waktu</label>
                 <select id="filter-waktu" class="retro-input">
                   <option value="Semua">Semua Waktu</option>
-                  <option value="Harian">Harian</option>
+                  <option value="Harian">Harian (Pilih Tanggal)</option>
                   <option value="Mingguan">7 Hari Terakhir</option>
-                  <option value="Bulanan">Bulan Ini</option>
-                  <option value="Kustom">Pilih Tanggal...</option>
+                  <option value="Bulanan">Bulanan (Pilih Bulan)</option>
+                  <option value="Kustom">Rentang Tanggal...</option>
                 </select>
+              </div>
+
+              <div id="filter-harian-group" style="display: none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Pilih Tanggal</label>
+                <input type="date" id="filter-date-single" class="retro-input">
+              </div>
+
+              <div id="filter-bulanan-group" style="display: none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Pilih Bulan</label>
+                <input type="month" id="filter-month-single" class="retro-input">
               </div>
 
               <div id="filter-date-group" style="display: none;">
