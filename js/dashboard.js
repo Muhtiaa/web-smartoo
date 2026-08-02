@@ -467,7 +467,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch(err) {
       alert("Terjadi kesalahan koneksi saat menghapus.");
-    };
+    }
+  };
 
   // ================= ROUTING & FILTER TRANSAKSI =================
   if (navDashboard && navTransaksi && viewDashboard && viewTransaksi) {
