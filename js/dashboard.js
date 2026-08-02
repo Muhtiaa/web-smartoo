@@ -28,6 +28,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalTitle = document.getElementById('modal-title');
   const btnSaveCrud = document.getElementById('btn-save-crud');
   const crudError = document.getElementById('crud-error');
+  const formNominal = document.getElementById('form-nominal');
+
+  // Format Nominal dengan Titik Ribuan
+  if (formNominal) {
+    formNominal.addEventListener('input', function(e) {
+      let val = this.value.replace(/[^0-9]/g, '');
+      if (val !== '') {
+        this.value = parseInt(val, 10).toLocaleString('id-ID').replace(/,/g, '.');
+      } else {
+        this.value = '';
+      }
+    });
+  }
 
   // Format IDR
   const formatRp = (num) => {
@@ -196,6 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activities = data.activities || [];
     cachedActivities = activities;
     const nama = data.nama_pengguna || "Pengguna";
+    localStorage.setItem('smartoo_nama', nama);
 
     userGreeting.textContent = `Halo, ${nama}`;
     valSaldo.textContent = formatRp(metrics.balance);
@@ -321,10 +335,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const jenis = document.getElementById('form-jenis').value;
     const keterangan = document.getElementById('form-keterangan').value;
     const kategori = document.getElementById('form-kategori').value;
-    const nominal = document.getElementById('form-nominal').value;
+    const nominalRaw = document.getElementById('form-nominal').value;
+    const nominal = nominalRaw.replace(/[^0-9]/g, ''); // bersihkan titik
+    const sumber_dana = document.getElementById('form-sumber-dana').value;
     const tag = document.getElementById('form-tag').value;
 
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
+    const nama_pengguna = localStorage.getItem('smartoo_nama') || "Pengguna Web";
+    
     if (!id_whatsapp) {
       alert("Sesi tidak valid, harap login ulang.");
       return;
@@ -333,11 +351,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const payload = {
       action: action,
       id_whatsapp: id_whatsapp,
+      nama_pengguna: nama_pengguna,
       id_transaksi: id_transaksi,
       jenis_transaksi: jenis,
       keterangan: keterangan,
       kategori: kategori,
       nominal: parseInt(nominal),
+      sumber_dana: sumber_dana,
       tag_status: tag
     };
 
@@ -381,7 +401,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-jenis').value = act.jenis_transaksi;
     document.getElementById('form-keterangan').value = act.keterangan;
     document.getElementById('form-kategori').value = act.kategori;
-    document.getElementById('form-nominal').value = act.nominal;
+    document.getElementById('form-nominal').value = parseInt(act.nominal, 10).toLocaleString('id-ID').replace(/,/g, '.');
+    
+    const sDana = document.getElementById('form-sumber-dana');
+    if(sDana) sDana.value = act.sumber_dana || "Tunai";
+    
     document.getElementById('form-tag').value = act.tag_status || "";
     
     document.getElementById('modal-title').textContent = "Edit Transaksi";
