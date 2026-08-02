@@ -30,8 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const filterSearch = document.getElementById('filter-search');
   const filterJenis = document.getElementById('filter-jenis');
   const filterWaktu = document.getElementById('filter-waktu');
+  const filterHarianGroup = document.getElementById('filter-harian-group');
+  const filterBulananGroup = document.getElementById('filter-bulanan-group');
   const filterDateGroup = document.getElementById('filter-date-group');
   const filterDateGroup2 = document.getElementById('filter-date-group2');
+  
+  const filterDateSingle = document.getElementById('filter-date-single');
+  const filterMonthSingle = document.getElementById('filter-month-single');
   const filterDateStart = document.getElementById('filter-date-start');
   const filterDateEnd = document.getElementById('filter-date-end');
   
@@ -496,35 +501,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const q = filterSearch.value.toLowerCase();
     const jenis = filterJenis.value;
     const waktu = filterWaktu.value;
-    const dStart = filterDateStart.value;
-    const dEnd = filterDateEnd.value;
+    
+    const dSingle = filterDateSingle ? filterDateSingle.value : '';
+    const mSingle = filterMonthSingle ? filterMonthSingle.value : '';
+    const dStart = filterDateStart ? filterDateStart.value : '';
+    const dEnd = filterDateEnd ? filterDateEnd.value : '';
 
     const today = new Date();
     today.setHours(0,0,0,0);
 
-    filteredActivities = cachedActivities.filter(act => {
+    // Helper untuk memparsing tanggal format DD/MM/YYYY atau YYYY-MM-DD
+    const parseCustomDate = (dateStr) => {
+      if (!dateStr) return new Date(0);
+      if (dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3 && parts[2].length === 4) {
+          // Asumsi DD/MM/YYYY -> YYYY-MM-DD
+          return new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+        }
+      }
+      return new Date(dateStr + "T00:00:00");
+    };
+
+    let filtered = cachedActivities.filter(act => {
       if (q && !(act.keterangan || '').toLowerCase().includes(q) && !(act.kategori || '').toLowerCase().includes(q)) return false;
       if (jenis !== 'Semua' && act.jenis_transaksi !== jenis) return false;
 
       if (waktu !== 'Semua' && act.tanggal) {
-        const actDate = new Date(act.tanggal);
-        actDate.setHours(0,0,0,0);
-
+        const actDate = parseCustomDate(act.tanggal);
+        
         if (waktu === 'Harian') {
-          if (actDate.getTime() !== today.getTime()) return false;
+          let targetDate = today;
+          if (dSingle) targetDate = new Date(dSingle + "T00:00:00");
+          if (actDate.getTime() !== targetDate.getTime()) return false;
         } else if (waktu === 'Mingguan') {
           const sevenDaysAgo = new Date(today);
           sevenDaysAgo.setDate(today.getDate() - 7);
           if (actDate < sevenDaysAgo || actDate > today) return false;
         } else if (waktu === 'Bulanan') {
-          if (actDate.getMonth() !== today.getMonth() || actDate.getFullYear() !== today.getFullYear()) return false;
+          let targetYear = today.getFullYear();
+          let targetMonth = today.getMonth();
+          if (mSingle) {
+            const mParts = mSingle.split('-');
+            targetYear = parseInt(mParts[0], 10);
+            targetMonth = parseInt(mParts[1], 10) - 1;
+          }
+          if (actDate.getFullYear() !== targetYear || actDate.getMonth() !== targetMonth) return false;
         } else if (waktu === 'Kustom') {
-          if (dStart && actDate < new Date(dStart)) return false;
-          if (dEnd && actDate > new Date(dEnd)) return false;
+          if (dStart) {
+            const sDate = new Date(dStart + "T00:00:00");
+            if (actDate < sDate) return false;
+          }
+          if (dEnd) {
+            const eDate = new Date(dEnd + "T00:00:00");
+            if (actDate > eDate) return false;
+          }
         }
       }
       return true;
     });
+
+    // Jika mode Kustom, reverse array agar dari tanggal terlama ke terbaru (sesuai request)
+    if (waktu === 'Kustom') {
+      filtered = filtered.reverse();
+    }
+    
+    filteredActivities = filtered;
 
     let totalMasuk = 0;
     let totalKeluar = 0;
@@ -590,17 +632,29 @@ document.addEventListener('DOMContentLoaded', () => {
   if (filterSearch) filterSearch.addEventListener('input', applyFilters);
   if (filterJenis) filterJenis.addEventListener('change', applyFilters);
   if (filterWaktu) filterWaktu.addEventListener('change', (e) => {
-    if (e.target.value === 'Kustom') {
-      filterDateGroup.style.display = 'block';
-      filterDateGroup2.style.display = 'block';
+    // Hide all first
+    if (filterHarianGroup) filterHarianGroup.style.display = 'none';
+    if (filterBulananGroup) filterBulananGroup.style.display = 'none';
+    if (filterDateGroup) filterDateGroup.style.display = 'none';
+    if (filterDateGroup2) filterDateGroup2.style.display = 'none';
+    
+    if (e.target.value === 'Harian') {
+      if (filterHarianGroup) filterHarianGroup.style.display = 'block';
+    } else if (e.target.value === 'Bulanan') {
+      if (filterBulananGroup) filterBulananGroup.style.display = 'block';
+    } else if (e.target.value === 'Kustom') {
+      if (filterDateGroup) filterDateGroup.style.display = 'block';
+      if (filterDateGroup2) filterDateGroup2.style.display = 'block';
     } else {
-      filterDateGroup.style.display = 'none';
-      filterDateGroup2.style.display = 'none';
-      filterDateStart.value = '';
-      filterDateEnd.value = '';
+      if (filterDateSingle) filterDateSingle.value = '';
+      if (filterMonthSingle) filterMonthSingle.value = '';
+      if (filterDateStart) filterDateStart.value = '';
+      if (filterDateEnd) filterDateEnd.value = '';
     }
     applyFilters();
   });
+  if (filterDateSingle) filterDateSingle.addEventListener('change', applyFilters);
+  if (filterMonthSingle) filterMonthSingle.addEventListener('change', applyFilters);
   if (filterDateStart) filterDateStart.addEventListener('change', applyFilters);
   if (filterDateEnd) filterDateEnd.addEventListener('change', applyFilters);
 
