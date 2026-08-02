@@ -170,10 +170,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- RENDER DASHBOARD ---
   let pieChartObj = null;
   let lineChartObj = null;
+  let cachedActivities = [];
+
+  window.exportCSV = () => {
+    if (cachedActivities.length === 0) {
+      alert("Tidak ada data untuk di-export!");
+      return;
+    }
+    const headers = ['Tanggal', 'Waktu', 'Keterangan', 'Kategori', 'Jenis', 'Nominal', 'Tag'];
+    const rows = cachedActivities.map(a => [
+      a.tanggal, a.waktu, `"${a.keterangan}"`, `"${a.kategori}"`, a.jenis_transaksi, a.nominal, a.tag_status || ""
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "smartoo_riwayat.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const renderDashboard = (data) => {
     const metrics = data.metrics || { income: 0, expense: 0, balance: 0, debt: 0, piutang: 0 };
     const activities = data.activities || [];
+    cachedActivities = activities;
     const nama = data.nama_pengguna || "Pengguna";
 
     userGreeting.textContent = `Halo, ${nama}`;
@@ -349,8 +370,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Fungsi Global untuk Edit & Hapus (dipanggil dari button onclick di tabel)
   window.editData = (id) => {
-    // Fitur edit simpel: alert for now, real implementation requires fetching single data
-    alert(`Fitur edit untuk ID: ${id} akan segera tersedia setelah Webhook dikonfigurasi sepenuhnya!`);
+    const act = cachedActivities.find(a => a.id_transaksi === id);
+    if (!act) {
+      alert('Data tidak ditemukan!');
+      return;
+    }
+    
+    document.getElementById('form-action').value = "edit";
+    document.getElementById('form-id').value = id;
+    document.getElementById('form-jenis').value = act.jenis_transaksi;
+    document.getElementById('form-keterangan').value = act.keterangan;
+    document.getElementById('form-kategori').value = act.kategori;
+    document.getElementById('form-nominal').value = act.nominal;
+    document.getElementById('form-tag').value = act.tag_status || "";
+    
+    document.getElementById('modal-title').textContent = "Edit Transaksi";
+    document.getElementById('crud-error').style.display = "none";
+    document.getElementById('crud-modal').style.display = "flex";
   };
 
   window.hapusData = async (id) => {
