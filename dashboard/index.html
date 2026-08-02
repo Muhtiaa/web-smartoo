@@ -495,8 +495,8 @@
           SMART O²
         </div>
         <ul class="nav-links">
-          <li><a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
-          <li><a href="#" onclick="alert('Fitur Transaksi sedang dalam pengembangan!'); return false;"><i class="fas fa-exchange-alt"></i> Transaksi</a></li>
+          <li><a href="#" class="active" id="nav-dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+          <li><a href="#" id="nav-transaksi"><i class="fas fa-exchange-alt"></i> Transaksi</a></li>
           <li><a href="#" onclick="alert('Fitur Dompet sedang dalam pengembangan!'); return false;"><i class="fas fa-wallet"></i> Dompet</a></li>
           <li><a href="#" onclick="alert('Fitur Kategori sedang dalam pengembangan!'); return false;"><i class="fas fa-tags"></i> Kategori</a></li>
           <li><a href="#" onclick="exportCSV(); return false;"><i class="fas fa-file-export"></i> Export</a></li>
@@ -520,65 +520,159 @@
           </div>
         </header>
 
-        <!-- Summary Cards (5 Cards) -->
-        <div class="summary-grid">
-          <div class="card card-saldo">
-            <div class="card-title">Total Saldo <i class="fas fa-wallet"></i></div>
-            <div class="card-value" id="val-saldo">Rp 0</div>
+        <!-- ================= VIEW: DASHBOARD ================= -->
+        <div id="view-dashboard">
+          <!-- Summary Cards (5 Cards) -->
+          <div class="summary-grid">
+            <div class="card card-saldo">
+              <div class="card-title">Total Saldo <i class="fas fa-wallet"></i></div>
+              <div class="card-value" id="val-saldo">Rp 0</div>
+            </div>
+            <div class="card card-masuk">
+              <div class="card-title">Pemasukan <i class="fas fa-arrow-down"></i></div>
+              <div class="card-value" id="val-pemasukan">Rp 0</div>
+            </div>
+            <div class="card card-keluar">
+              <div class="card-title">Pengeluaran <i class="fas fa-arrow-up"></i></div>
+              <div class="card-value" id="val-pengeluaran">Rp 0</div>
+            </div>
+            <div class="card card-utang">
+              <div class="card-title">Utang <i class="fas fa-hand-holding-usd"></i></div>
+              <div class="card-value" id="val-utang">Rp 0</div>
+            </div>
+            <div class="card card-piutang">
+              <div class="card-title">Piutang <i class="fas fa-handshake"></i></div>
+              <div class="card-value" id="val-piutang">Rp 0</div>
+            </div>
           </div>
-          <div class="card card-masuk">
-            <div class="card-title">Pemasukan <i class="fas fa-arrow-down"></i></div>
-            <div class="card-value" id="val-pemasukan">Rp 0</div>
+
+          <!-- Charts -->
+          <div class="charts-grid">
+            <div class="chart-box">
+              <h3>Pemasukan vs Pengeluaran</h3>
+              <div class="chart-container-inner">
+                <canvas id="pieChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-box">
+              <h3>Pergerakan Harian (Bulan Ini)</h3>
+              <div class="chart-container-inner">
+                <canvas id="lineChart"></canvas>
+              </div>
+            </div>
           </div>
-          <div class="card card-keluar">
-            <div class="card-title">Pengeluaran <i class="fas fa-arrow-up"></i></div>
-            <div class="card-value" id="val-pengeluaran">Rp 0</div>
-          </div>
-          <div class="card card-utang">
-            <div class="card-title">Utang <i class="fas fa-hand-holding-usd"></i></div>
-            <div class="card-value" id="val-utang">Rp 0</div>
-          </div>
-          <div class="card card-piutang">
-            <div class="card-title">Piutang <i class="fas fa-handshake"></i></div>
-            <div class="card-value" id="val-piutang">Rp 0</div>
+
+          <!-- Tabel Aktivitas Terbaru -->
+          <div class="table-container">
+            <div class="table-header">
+              <h3>Aktivitas Terbaru</h3>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Keterangan</th>
+                  <th>Kategori</th>
+                  <th>Nominal</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-body-dashboard">
+                <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Charts -->
-        <div class="charts-grid">
-          <div class="chart-box">
-            <h3>Pemasukan vs Pengeluaran</h3>
-            <div class="chart-container-inner">
-              <canvas id="pieChart"></canvas>
+        <!-- ================= VIEW: TRANSAKSI ================= -->
+        <div id="view-transaksi" style="display: none;">
+          
+          <!-- Filter Panel -->
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="table-header" style="border: none; padding: 0; margin-bottom: 15px;">
+              <h3 style="margin: 0;"><i class="fas fa-filter"></i> Filter Transaksi</h3>
             </div>
-          </div>
-          <div class="chart-box">
-            <h3>Pergerakan Harian (Bulan Ini)</h3>
-            <div class="chart-container-inner">
-              <canvas id="lineChart"></canvas>
-            </div>
-          </div>
-        </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+              
+              <div>
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Cari Keterangan</label>
+                <input type="text" id="filter-search" class="retro-input" placeholder="Ketik kata kunci...">
+              </div>
 
-        <!-- Tabel Aktivitas Terbaru -->
-        <div class="table-container">
-          <div class="table-header">
-            <h3>Aktivitas Terbaru</h3>
+              <div>
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Jenis Transaksi</label>
+                <select id="filter-jenis" class="retro-input">
+                  <option value="Semua">Semua Jenis</option>
+                  <option value="Pemasukan">Pemasukan</option>
+                  <option value="Pengeluaran">Pengeluaran</option>
+                  <option value="Mutasi">Mutasi</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Rentang Waktu</label>
+                <select id="filter-waktu" class="retro-input">
+                  <option value="Semua">Semua Waktu</option>
+                  <option value="Harian">Harian</option>
+                  <option value="Mingguan">7 Hari Terakhir</option>
+                  <option value="Bulanan">Bulan Ini</option>
+                  <option value="Kustom">Pilih Tanggal...</option>
+                </select>
+              </div>
+
+              <div id="filter-date-group" style="display: none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Dari Tanggal</label>
+                <input type="date" id="filter-date-start" class="retro-input">
+              </div>
+
+              <div id="filter-date-group2" style="display: none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Sampai Tanggal</label>
+                <input type="date" id="filter-date-end" class="retro-input">
+              </div>
+            </div>
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Tanggal</th>
-                <th>Keterangan</th>
-                <th>Kategori</th>
-                <th>Nominal</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="table-body">
-              <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
-            </tbody>
-          </table>
+
+          <!-- Mini Summary for Filter -->
+          <div class="summary-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+            <div class="card card-masuk" style="padding: 15px;">
+              <div class="card-title">Pemasukan (Filter)</div>
+              <div class="card-value" id="val-filter-pemasukan" style="font-size: 1.2rem;">Rp 0</div>
+            </div>
+            <div class="card card-keluar" style="padding: 15px;">
+              <div class="card-title">Pengeluaran (Filter)</div>
+              <div class="card-value" id="val-filter-pengeluaran" style="font-size: 1.2rem;">Rp 0</div>
+            </div>
+            <div class="card card-saldo" style="padding: 15px;">
+              <div class="card-title">Selisih Bersih</div>
+              <div class="card-value" id="val-filter-selisih" style="font-size: 1.2rem;">Rp 0</div>
+            </div>
+          </div>
+
+          <!-- Tabel Transaksi Lengkap -->
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Keterangan</th>
+                  <th>Sumber Dana</th>
+                  <th>Nominal</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-body-transaksi">
+                <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
+              </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+              <button id="btn-prev-page" class="btn-action" style="background: var(--primary); color: white; padding: 5px 15px; border-radius: 4px; box-shadow: 2px 2px 0 #000;">&laquo; Prev</button>
+              <span id="page-indicator" style="font-weight: bold; color: #666;">Halaman 1 / 1</span>
+              <button id="btn-next-page" class="btn-action" style="background: var(--primary); color: white; padding: 5px 15px; border-radius: 4px; box-shadow: 2px 2px 0 #000;">Next &raquo;</button>
+            </div>
+          </div>
+
         </div>
       </main>
 
@@ -610,6 +704,7 @@
           <select id="form-jenis" class="retro-input" required>
             <option value="Pengeluaran">Pengeluaran</option>
             <option value="Pemasukan">Pemasukan</option>
+            <option value="Mutasi">Mutasi (Pindah Dana)</option>
           </select>
         </div>
         
@@ -630,6 +725,7 @@
             <option value="Makanan">Makanan</option>
             <option value="Transportasi">Transportasi</option>
             <option value="Hiburan">Hiburan</option>
+            <option value="Pendidikan">Pendidikan</option>
             <option value="Belanja">Belanja</option>
             <option value="Tagihan">Tagihan</option>
             <option value="Cicilan">Cicilan</option>
