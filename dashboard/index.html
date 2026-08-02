@@ -425,7 +425,17 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin: -30px -30px 20px -30px;
+      padding: 20px 30px;
+      background: var(--primary);
+      color: white;
+      border-bottom: var(--border);
+      border-radius: 8px 8px 0 0;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: white;
     }
 
     .close-modal {
@@ -433,6 +443,13 @@
       border: none;
       font-size: 1.5rem;
       cursor: pointer;
+      color: white;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .close-modal:hover {
+      opacity: 1;
     }
 
     @media (max-width: 768px) {
@@ -603,12 +620,47 @@
         
         <div class="input-group">
           <label>Kategori</label>
-          <input type="text" id="form-kategori" class="retro-input" placeholder="Makanan" required>
+          <select id="form-kategori" class="retro-input" required>
+            <option value="">Pilih Kategori...</option>
+            <option value="Gaji">Gaji</option>
+            <option value="Bonus">Bonus</option>
+            <option value="Tip">Tip</option>
+            <option value="Hasil Usaha">Hasil Usaha</option>
+            <option value="Investasi">Investasi</option>
+            <option value="Makanan">Makanan</option>
+            <option value="Transportasi">Transportasi</option>
+            <option value="Hiburan">Hiburan</option>
+            <option value="Belanja">Belanja</option>
+            <option value="Tagihan">Tagihan</option>
+            <option value="Cicilan">Cicilan</option>
+            <option value="Belanja Online">Belanja Online</option>
+            <option value="Asuransi">Asuransi</option>
+            <option value="Donasi">Donasi</option>
+            <option value="Lain-lain">Lain-lain</option>
+          </select>
         </div>
         
         <div class="input-group">
+          <label>Sumber Dana</label>
+          <select id="form-sumber-dana" class="retro-input" required>
+            <option value="">Pilih Sumber Dana...</option>
+            <option value="Tunai">Tunai</option>
+            <option value="BCA">BCA</option>
+            <option value="Mandiri">Mandiri</option>
+            <option value="BNI">BNI</option>
+            <option value="BRI">BRI</option>
+            <option value="BSI">BSI</option>
+            <option value="OVO">OVO</option>
+            <option value="GoPay">GoPay</option>
+            <option value="DANA">DANA</option>
+            <option value="ShopeePay">ShopeePay</option>
+            <option value="Lain-lain">Lain-lain</option>
+          </select>
+        </div>
+
+        <div class="input-group">
           <label>Nominal (Rp)</label>
-          <input type="number" id="form-nominal" class="retro-input" placeholder="50000" required>
+          <input type="text" id="form-nominal" class="retro-input" placeholder="50.000" required>
         </div>
         
         <div class="input-group">
