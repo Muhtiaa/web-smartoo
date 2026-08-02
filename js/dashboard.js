@@ -18,7 +18,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const valPengeluaran = document.getElementById('val-pengeluaran');
   const valUtang = document.getElementById('val-utang');
   const valPiutang = document.getElementById('val-piutang');
-  const tableBody = document.getElementById('table-body');
+  const tableBodyDashboard = document.getElementById('table-body-dashboard');
+
+  // View Routing Elements
+  const navDashboard = document.getElementById('nav-dashboard');
+  const navTransaksi = document.getElementById('nav-transaksi');
+  const viewDashboard = document.getElementById('view-dashboard');
+  const viewTransaksi = document.getElementById('view-transaksi');
+
+  // Filter & Pagination Elements
+  const filterSearch = document.getElementById('filter-search');
+  const filterJenis = document.getElementById('filter-jenis');
+  const filterWaktu = document.getElementById('filter-waktu');
+  const filterDateGroup = document.getElementById('filter-date-group');
+  const filterDateGroup2 = document.getElementById('filter-date-group2');
+  const filterDateStart = document.getElementById('filter-date-start');
+  const filterDateEnd = document.getElementById('filter-date-end');
+  
+  const valFilterMasuk = document.getElementById('val-filter-pemasukan');
+  const valFilterKeluar = document.getElementById('val-filter-pengeluaran');
+  const valFilterSelisih = document.getElementById('val-filter-selisih');
+  
+  const tableBodyTransaksi = document.getElementById('table-body-transaksi');
+  const btnPrevPage = document.getElementById('btn-prev-page');
+  const btnNextPage = document.getElementById('btn-next-page');
+  const pageIndicator = document.getElementById('page-indicator');
+
+  let currentPage = 1;
+  const itemsPerPage = 10;
+  let filteredActivities = [];
 
   // Modal Elements
   const modal = document.getElementById('crud-modal');
@@ -208,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const metrics = data.metrics || { income: 0, expense: 0, balance: 0, debt: 0, piutang: 0 };
     const activities = data.activities || [];
     cachedActivities = activities;
-    const nama = data.nama_pengguna || "Pengguna";
+    const nama = data.nama_pengguna || "Pengguna Web";
     localStorage.setItem('smartoo_nama', nama);
 
     userGreeting.textContent = `Halo, ${nama}`;
@@ -218,33 +246,38 @@ document.addEventListener('DOMContentLoaded', () => {
     valUtang.textContent = formatRp(metrics.debt);
     valPiutang.textContent = formatRp(metrics.piutang || 0);
 
-    // Render Table
-    tableBody.innerHTML = '';
+    // Render Table Dashboard (Recent 10)
+    tableBodyDashboard.innerHTML = '';
     if (activities.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada aktivitas.</td></tr>`;
+      tableBodyDashboard.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada aktivitas.</td></tr>`;
     } else {
-      activities.forEach(act => {
+      const recent10 = activities.slice(0, 10);
+      recent10.forEach(act => {
         const isIncome = act.jenis_transaksi === 'Pemasukan';
-        const color = isIncome ? '#27ae60' : '#c0392b';
-        const symbol = isIncome ? '+' : '-';
+        const color = isIncome ? '#27ae60' : (act.jenis_transaksi === 'Pengeluaran' ? '#c0392b' : '#f39c12');
+        const symbol = isIncome ? '+' : (act.jenis_transaksi === 'Pengeluaran' ? '-' : '');
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${act.tanggal} <br><small>${act.waktu}</small></td>
           <td><strong>${act.keterangan}</strong></td>
           <td>${act.kategori}</td>
-          <td style="color:${color}; font-weight:bold;">${symbol} ${formatRp(act.nominal)}</td>
+          <td style="color:${color}; font-weight:bold;">${symbol} ${formatRp(act.nominal)}          </td>
           <td>
-            <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')" title="Edit"><i class="fas fa-edit"></i></button>
-            <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')" title="Hapus"><i class="fas fa-trash"></i></button>
+            <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')"><i class="fas fa-edit"></i></button>
+            <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')"><i class="fas fa-trash"></i></button>
           </td>
         `;
-        tableBody.appendChild(tr);
+        tableBodyDashboard.appendChild(tr);
       });
     }
 
-    // Render Charts
     renderCharts(metrics, activities);
+    
+    // Auto-update filter if Transaksi view is active
+    if (viewTransaksi && viewTransaksi.style.display === 'block') {
+      applyFilters();
+    }
   };
 
   const renderCharts = (metrics, activities) => {
@@ -434,9 +467,162 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch(err) {
       alert("Terjadi kesalahan koneksi saat menghapus.");
-    }
+    };
+
+  // ================= ROUTING & FILTER TRANSAKSI =================
+  if (navDashboard && navTransaksi && viewDashboard && viewTransaksi) {
+    navDashboard.addEventListener('click', (e) => {
+      e.preventDefault();
+      navDashboard.classList.add('active');
+      navTransaksi.classList.remove('active');
+      viewDashboard.style.display = 'block';
+      viewTransaksi.style.display = 'none';
+    });
+
+    navTransaksi.addEventListener('click', (e) => {
+      e.preventDefault();
+      navTransaksi.classList.add('active');
+      navDashboard.classList.remove('active');
+      viewDashboard.style.display = 'none';
+      viewTransaksi.style.display = 'block';
+      applyFilters(); 
+    });
+  }
+
+  const applyFilters = () => {
+    if (!filterSearch) return;
+
+    const q = filterSearch.value.toLowerCase();
+    const jenis = filterJenis.value;
+    const waktu = filterWaktu.value;
+    const dStart = filterDateStart.value;
+    const dEnd = filterDateEnd.value;
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    filteredActivities = cachedActivities.filter(act => {
+      if (q && !(act.keterangan || '').toLowerCase().includes(q) && !(act.kategori || '').toLowerCase().includes(q)) return false;
+      if (jenis !== 'Semua' && act.jenis_transaksi !== jenis) return false;
+
+      if (waktu !== 'Semua' && act.tanggal) {
+        const actDate = new Date(act.tanggal);
+        actDate.setHours(0,0,0,0);
+
+        if (waktu === 'Harian') {
+          if (actDate.getTime() !== today.getTime()) return false;
+        } else if (waktu === 'Mingguan') {
+          const sevenDaysAgo = new Date(today);
+          sevenDaysAgo.setDate(today.getDate() - 7);
+          if (actDate < sevenDaysAgo || actDate > today) return false;
+        } else if (waktu === 'Bulanan') {
+          if (actDate.getMonth() !== today.getMonth() || actDate.getFullYear() !== today.getFullYear()) return false;
+        } else if (waktu === 'Kustom') {
+          if (dStart && actDate < new Date(dStart)) return false;
+          if (dEnd && actDate > new Date(dEnd)) return false;
+        }
+      }
+      return true;
+    });
+
+    let totalMasuk = 0;
+    let totalKeluar = 0;
+    filteredActivities.forEach(act => {
+      if (act.jenis_transaksi === 'Pemasukan') totalMasuk += parseInt(act.nominal) || 0;
+      if (act.jenis_transaksi === 'Pengeluaran') totalKeluar += parseInt(act.nominal) || 0;
+    });
+
+    valFilterMasuk.textContent = formatRp(totalMasuk);
+    valFilterKeluar.textContent = formatRp(totalKeluar);
+    valFilterSelisih.textContent = formatRp(totalMasuk - totalKeluar);
+
+    currentPage = 1;
+    renderTransaksiTable();
   };
 
-  // INIT
-  checkSession();
-});
+  const renderTransaksiTable = () => {
+    if (!tableBodyTransaksi) return;
+    tableBodyTransaksi.innerHTML = '';
+    
+    const maxPage = Math.ceil(filteredActivities.length / itemsPerPage) || 1;
+    if (pageIndicator) pageIndicator.textContent = `Halaman ${currentPage} / ${maxPage}`;
+
+    if (filteredActivities.length === 0) {
+      tableBodyTransaksi.innerHTML = `<tr><td colspan="5" style="text-align:center;">Tidak ada transaksi yang cocok.</td></tr>`;
+      return;
+    }
+
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    const endIdx = startIdx + itemsPerPage;
+    const pageData = filteredActivities.slice(startIdx, endIdx);
+
+    pageData.forEach(act => {
+      let color = '#333';
+      let symbol = '';
+      if(act.jenis_transaksi === 'Pemasukan'){ color = '#27ae60'; symbol = '+'; }
+      if(act.jenis_transaksi === 'Pengeluaran'){ color = '#c0392b'; symbol = '-'; }
+      if(act.jenis_transaksi === 'Mutasi'){ color = '#f39c12'; symbol = ''; }
+      
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <div style="font-weight:bold;">${act.tanggal || '-'}</div>
+          <div style="font-size:0.8rem; color:#888;">${act.waktu || '-'}</div>
+        </td>
+        <td>
+          <div style="font-weight:bold;">${act.keterangan || '-'}</div>
+          <div style="font-size:0.8rem; color:#888;">${act.kategori || '-'}</div>
+        </td>
+        <td>${act.sumber_dana || '-'}</td>
+        <td style="color: ${color}; font-weight: bold;">
+          ${symbol} ${formatRp(act.nominal || 0)}
+        </td>
+        <td>
+          <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')"><i class="fas fa-edit"></i></button>
+          <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')"><i class="fas fa-trash"></i></button>
+        </td>
+      `;
+      tableBodyTransaksi.appendChild(tr);
+    });
+  };
+
+  if (filterSearch) filterSearch.addEventListener('input', applyFilters);
+  if (filterJenis) filterJenis.addEventListener('change', applyFilters);
+  if (filterWaktu) filterWaktu.addEventListener('change', (e) => {
+    if (e.target.value === 'Kustom') {
+      filterDateGroup.style.display = 'block';
+      filterDateGroup2.style.display = 'block';
+    } else {
+      filterDateGroup.style.display = 'none';
+      filterDateGroup2.style.display = 'none';
+      filterDateStart.value = '';
+      filterDateEnd.value = '';
+    }
+    applyFilters();
+  });
+  if (filterDateStart) filterDateStart.addEventListener('change', applyFilters);
+  if (filterDateEnd) filterDateEnd.addEventListener('change', applyFilters);
+
+  if (btnPrevPage) {
+    btnPrevPage.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTransaksiTable();
+      }
+    });
+  }
+
+  if (btnNextPage) {
+    btnNextPage.addEventListener('click', () => {
+      const maxPage = Math.ceil(filteredActivities.length / itemsPerPage) || 1;
+      if (currentPage < maxPage) {
+        currentPage++;
+        renderTransaksiTable();
+      }
+    });
+  }
+  // ================= END ROUTING =================
+
+    // INIT
+    checkSession();
+  });
