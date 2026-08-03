@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://smart-oo.me/</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/" />
+  </url>
+  <url>
+    <loc>https://smart-oo.me/en/</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/" />
+  </url>
+
+  <url>
+    <loc>https://smart-oo.me/faq.html</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/faq.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/faq.html" />
+  </url>
+  <url>
+    <loc>https://smart-oo.me/en/faq.html</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/faq.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/faq.html" />
+  </url>
+
+  <url>
+    <loc>https://smart-oo.me/terms.html</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/terms.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/terms.html" />
+  </url>
+  <url>
+    <loc>https://smart-oo.me/en/terms.html</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/terms.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/terms.html" />
+  </url>
+
+  <url>
+    <loc>https://smart-oo.me/refund.html</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/refund.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/refund.html" />
+  </url>
+  <url>
+    <loc>https://smart-oo.me/en/refund.html</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/refund.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/refund.html" />
+  </url>
+
+  <url>
+    <loc>https://smart-oo.me/asisten-catatan-keuangan.html</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/asisten-catatan-keuangan.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/asisten-catatan-keuangan.html" />
+  </url>
+  <url>
+    <loc>https://smart-oo.me/en/asisten-catatan-keuangan.html</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/asisten-catatan-keuangan.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/asisten-catatan-keuangan.html" />
+  </url>
+
+  <url>
+    <loc>https://smart-oo.me/template_database_30_bahasa.html</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/template_database_30_bahasa.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/template_database_30_bahasa.html" />
+  </url>
+  <url>
+    <loc>https://smart-oo.me/en/template_database_30_bahasa.html</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/template_database_30_bahasa.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/template_database_30_bahasa.html" />
+  </url>
+
+  <url>
+    <loc>https://smart-oo.me/dashboard/</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/dashboard/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/dashboard/" />
+  </url>
+  <url>
+    <loc>https://smart-oo.me/en/dashboard/</loc>
+    <xhtml:link rel="alternate" hreflang="id" href="https://smart-oo.me/dashboard/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smart-oo.me/en/dashboard/" />
+  </url>
+</urlset>
