@@ -503,9 +503,9 @@
         <ul class="nav-links">
           <li><a href="#" class="active" id="nav-dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
           <li><a href="#" id="nav-transaksi"><i class="fas fa-exchange-alt"></i> Transaksi</a></li>
-          <li><a href="#" onclick="alert('Fitur Dompet sedang dalam pengembangan!'); return false;"><i class="fas fa-wallet"></i> Dompet</a></li>
-          <li><a href="#" onclick="alert('Fitur Kategori sedang dalam pengembangan!'); return false;"><i class="fas fa-tags"></i> Kategori</a></li>
-          <li><a href="#" onclick="exportCSV(); return false;"><i class="fas fa-file-export"></i> Export</a></li>
+          <li><a href="#" id="nav-dompet-sidebar"><i class="fas fa-wallet"></i> Dompet</a></li>
+          <li><a href="#" id="nav-kategori-sidebar"><i class="fas fa-tags"></i> Kategori</a></li>
+          <li><a href="#" onclick="document.getElementById('modal-export').style.display='flex'; return false;"><i class="fas fa-file-export"></i> Export</a></li>
           <li><a href="#" onclick="alert('Fitur Pengaturan sedang dalam pengembangan!'); return false;"><i class="fas fa-cog"></i> Pengaturan</a></li>
         </ul>
         <div class="sidebar-footer">
