@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // View Routing Elements
   const navDashboard = document.getElementById('nav-dashboard');
   const navTransaksi = document.getElementById('nav-transaksi');
+  const navDompetSidebar = document.getElementById('nav-dompet-sidebar');
+  const navKategoriSidebar = document.getElementById('nav-kategori-sidebar');
   const navDashboardMobile = document.getElementById('nav-dashboard-mobile');
   const navTransaksiMobile = document.getElementById('nav-transaksi-mobile');
   const viewDashboard = document.getElementById('view-dashboard');
@@ -698,6 +700,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (navTransaksi) navTransaksi.addEventListener('click', (e) => { e.preventDefault(); switchView('transaksi'); });
   if (navTransaksiMobile) navTransaksiMobile.addEventListener('click', (e) => { e.preventDefault(); switchView('transaksi'); });
   
+  if (navDompetSidebar) navDompetSidebar.addEventListener('click', (e) => { e.preventDefault(); switchView('dompet'); });
+  if (navKategoriSidebar) navKategoriSidebar.addEventListener('click', (e) => { e.preventDefault(); switchView('kategori'); });
+
   if (navDompetMobile) navDompetMobile.addEventListener('click', (e) => { e.preventDefault(); switchView('dompet'); });
   
   // Offcanvas Links
