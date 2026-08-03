@@ -27,6 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const navTransaksiMobile = document.getElementById('nav-transaksi-mobile');
   const viewDashboard = document.getElementById('view-dashboard');
   const viewTransaksi = document.getElementById('view-transaksi');
+  const viewDompet = document.getElementById('view-dompet');
+  const viewKategori = document.getElementById('view-kategori');
+  
+  const navDompetMobile = document.getElementById('nav-dompet-mobile');
+  const navLainnyaMobile = document.getElementById('nav-lainnya-mobile');
+  const navKategoriMobile = document.getElementById('nav-kategori-mobile');
+  const modalLainnya = document.getElementById('modal-lainnya');
+  const btnCloseLainnya = document.getElementById('btn-close-lainnya');
 
   // Filter & Pagination Elements
   const filterSearch = document.getElementById('filter-search');
@@ -64,6 +72,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSaveCrud = document.getElementById('btn-save-crud');
   const crudError = document.getElementById('crud-error');
   const formNominal = document.getElementById('form-nominal');
+  const formTanggal = document.getElementById('form-tanggal');
+  const formWaktu = document.getElementById('form-waktu');
+  const formJenis = document.getElementById('form-jenis');
+  const tujuanDanaGroup = document.getElementById('tujuan-dana-group');
+  const labelSumberDana = document.getElementById('label-sumber-dana');
+  const formTujuanDana = document.getElementById('form-tujuan-dana');
+  
+  if (formJenis) {
+    formJenis.addEventListener('change', (e) => {
+      if (e.target.value === 'Mutasi') {
+        if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'block';
+        if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana (Asal)';
+      } else {
+        if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'none';
+        if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana';
+      }
+    });
+  }
 
   // Format Nominal dengan Titik Ribuan
   if (formNominal) {
@@ -220,24 +246,152 @@ document.addEventListener('DOMContentLoaded', () => {
   let lineChartObj = null;
   let cachedActivities = [];
 
-  window.exportCSV = () => {
-    if (cachedActivities.length === 0) {
-      alert("Tidak ada data untuk di-export!");
-      return;
-    }
-    const headers = ['Tanggal', 'Waktu', 'Keterangan', 'Kategori', 'Jenis', 'Nominal', 'Tag'];
-    const rows = cachedActivities.map(a => [
-      a.tanggal, a.waktu, `"${a.keterangan}"`, `"${a.kategori}"`, a.jenis_transaksi, a.nominal, a.tag_status || ""
-    ]);
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "smartoo_riwayat.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // --- EXPORT EXCEL MODAL ---
+  const modalExport = document.getElementById('modal-export');
+  const btnCloseExport = document.getElementById('btn-close-export');
+  const exportRentang = document.getElementById('export-rentang');
+  const btnDoExport = document.getElementById('btn-do-export');
+  
+  const expHarian = document.getElementById('export-harian-group');
+  const expBulanan = document.getElementById('export-bulanan-group');
+  const expKustom = document.getElementById('export-kustom-group');
+  const expDateSingle = document.getElementById('export-date-single');
+  const expMonthSingle = document.getElementById('export-month-single');
+  const expDateStart = document.getElementById('export-date-start');
+  const expDateEnd = document.getElementById('export-date-end');
+
+  window.exportExcel = () => {
+    if(modalLainnya) modalLainnya.style.display = 'none';
+    if(modalExport) modalExport.style.display = 'flex';
   };
+  
+  if (btnCloseExport) btnCloseExport.addEventListener('click', () => {
+    modalExport.style.display = 'none';
+  });
+
+  if (exportRentang) {
+    exportRentang.addEventListener('change', (e) => {
+      expHarian.style.display = 'none';
+      expBulanan.style.display = 'none';
+      expKustom.style.display = 'none';
+      
+      if (e.target.value === 'Harian') expHarian.style.display = 'block';
+      else if (e.target.value === 'Bulanan') expBulanan.style.display = 'block';
+      else if (e.target.value === 'Kustom') expKustom.style.display = 'grid';
+    });
+  }
+
+  if (btnDoExport) {
+    btnDoExport.addEventListener('click', async () => {
+      if (cachedActivities.length === 0) {
+        alert("Tidak ada data untuk di-export!");
+        return;
+      }
+      
+      const rentang = exportRentang.value;
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      
+      const parseDate = (dStr) => {
+         if(!dStr) return new Date(0);
+         if(dStr.includes('/')) {
+            const p = dStr.split('/');
+            return new Date(`${p[2]}-${p[1]}-${p[0]}T00:00:00`);
+         }
+         return new Date(dStr + "T00:00:00");
+      };
+
+      let filtered = cachedActivities.filter(act => {
+        if (!act.tanggal) return false;
+        const actDate = parseDate(act.tanggal);
+        
+        if (rentang === 'Harian') {
+          const tDate = expDateSingle.value ? new Date(expDateSingle.value + "T00:00:00") : today;
+          return actDate.getTime() === tDate.getTime();
+        } else if (rentang === 'Mingguan') {
+          const seven = new Date(today); seven.setDate(today.getDate() - 7);
+          return actDate >= seven && actDate <= today;
+        } else if (rentang === 'Bulanan') {
+          let ty = today.getFullYear(); let tm = today.getMonth();
+          if (expMonthSingle.value) {
+            const p = expMonthSingle.value.split('-');
+            ty = parseInt(p[0], 10); tm = parseInt(p[1], 10)-1;
+          }
+          return actDate.getFullYear() === ty && actDate.getMonth() === tm;
+        } else if (rentang === 'Kustom') {
+          if (expDateStart.value && actDate < new Date(expDateStart.value + "T00:00:00")) return false;
+          if (expDateEnd.value && actDate > new Date(expDateEnd.value + "T00:00:00")) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        alert("Tidak ada transaksi di rentang waktu tersebut.");
+        return;
+      }
+
+      // EXCELJS GENERATION
+      btnDoExport.textContent = "Mengekspor...";
+      try {
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet('Laporan Keuangan');
+
+        // Styling
+        sheet.columns = [
+          { header: 'ID Transaksi', key: 'id', width: 20 },
+          { header: 'Tanggal', key: 'tgl', width: 15 },
+          { header: 'Waktu', key: 'wkt', width: 10 },
+          { header: 'Jenis', key: 'jenis', width: 15 },
+          { header: 'Kategori', key: 'kat', width: 20 },
+          { header: 'Keterangan', key: 'ket', width: 30 },
+          { header: 'Sumber Dana', key: 'sumber', width: 20 },
+          { header: 'Tujuan Dana (Mutasi)', key: 'tujuan', width: 20 },
+          { header: 'Nominal', key: 'nom', width: 20 },
+          { header: 'Tag', key: 'tag', width: 15 }
+        ];
+
+        // Header Row Styling (Green Background, White Bold Text)
+        sheet.getRow(1).eachCell((cell) => {
+          cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1b3c35' } };
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        });
+
+        // Add Data
+        filtered.forEach(act => {
+          sheet.addRow({
+            id: act.id_transaksi,
+            tgl: act.tanggal,
+            wkt: act.waktu,
+            jenis: act.jenis_transaksi,
+            kat: act.kategori,
+            ket: act.keterangan,
+            sumber: act.sumber_dana,
+            tujuan: act.tujuan_dana || '-',
+            nom: parseInt(act.nominal) || 0,
+            tag: act.tag_status || '-'
+          });
+        });
+
+        // Currency Format for Nominal
+        sheet.getColumn('nom').numFmt = '"Rp"#,##0;[Red]\-"Rp"#,##0';
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Laporan_Keuangan_SMARTO2_${rentang}.xlsx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error(err);
+        alert("Gagal membuat file Excel. Pastikan koneksi internet stabil.");
+      } finally {
+        btnDoExport.innerHTML = '<i class="fas fa-file-excel"></i> UNDUH EXCEL';
+      }
+    });
+  }
 
   const renderDashboard = (data) => {
     const metrics = data.metrics || { income: 0, expense: 0, balance: 0, debt: 0, piutang: 0 };
@@ -358,6 +512,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-action').value = "tambah";
     document.getElementById('form-id').value = "";
     crudForm.reset();
+    
+    // Set default date/time to now
+    const now = new Date();
+    if(formTanggal) formTanggal.value = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+    if(formWaktu) formWaktu.value = now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).substring(0,5);
+    
+    // Reset Mutasi UI
+    if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'none';
+    if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana';
+
     modalTitle.textContent = "Catat Transaksi";
     crudError.style.display = "none";
     modal.style.display = "flex";
@@ -398,7 +562,11 @@ document.addEventListener('DOMContentLoaded', () => {
       kategori: kategori,
       nominal: parseInt(nominal),
       sumber_dana: sumber_dana,
-      tag_status: tag
+      tujuan_dana: formTujuanDana ? formTujuanDana.value : "",
+      tag_status: tag,
+      tanggal: formTanggal ? formTanggal.value : "",
+      waktu: formWaktu ? formWaktu.value : "",
+      bulan_tahun: formTanggal && formTanggal.value ? formTanggal.value.substring(0, 7) + '-01' : ""
     };
 
     btnSaveCrud.textContent = "Menyimpan...";
@@ -443,8 +611,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-kategori').value = act.kategori;
     document.getElementById('form-nominal').value = parseInt(act.nominal, 10).toLocaleString('id-ID').replace(/,/g, '.');
     
+    if (formTanggal) formTanggal.value = act.tanggal || '';
+    if (formWaktu) formWaktu.value = act.waktu ? act.waktu.substring(0,5) : '';
+    
     const sDana = document.getElementById('form-sumber-dana');
     if(sDana) sDana.value = act.sumber_dana || "Tunai";
+    if(formTujuanDana) formTujuanDana.value = act.tujuan_dana || "";
+    
+    if(act.jenis_transaksi === 'Mutasi') {
+       if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'block';
+       if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana (Asal)';
+    } else {
+       if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'none';
+       if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana';
+    }
     
     document.getElementById('form-tag').value = act.tag_status || "";
     
@@ -478,34 +658,57 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ================= ROUTING & FILTER TRANSAKSI =================
-  const switchView = (toTransaksi) => {
-    if (toTransaksi) {
-      if (navDashboard) navDashboard.classList.remove('active');
-      if (navDashboardMobile) navDashboardMobile.classList.remove('active');
+  const switchView = (viewName) => {
+    // Hide all views
+    if (viewDashboard) viewDashboard.style.display = 'none';
+    if (viewTransaksi) viewTransaksi.style.display = 'none';
+    if (viewDompet) viewDompet.style.display = 'none';
+    if (viewKategori) viewKategori.style.display = 'none';
+    
+    // Remove active classes
+    [navDashboard, navDashboardMobile, navTransaksi, navTransaksiMobile, navDompetMobile].forEach(nav => {
+      if(nav) nav.classList.remove('active');
+    });
+
+    if (viewName === 'transaksi') {
       if (navTransaksi) navTransaksi.classList.add('active');
       if (navTransaksiMobile) navTransaksiMobile.classList.add('active');
-      
-      viewDashboard.style.display = 'none';
-      viewTransaksi.style.display = 'block';
+      if (viewTransaksi) viewTransaksi.style.display = 'block';
       applyFilters(); 
+    } else if (viewName === 'dompet') {
+      if (navDompetMobile) navDompetMobile.classList.add('active');
+      if (viewDompet) viewDompet.style.display = 'block';
+    } else if (viewName === 'kategori') {
+      if (viewKategori) viewKategori.style.display = 'block';
     } else {
       if (navDashboard) navDashboard.classList.add('active');
       if (navDashboardMobile) navDashboardMobile.classList.add('active');
-      if (navTransaksi) navTransaksi.classList.remove('active');
-      if (navTransaksiMobile) navTransaksiMobile.classList.remove('active');
-      
-      viewDashboard.style.display = 'block';
-      viewTransaksi.style.display = 'none';
+      if (viewDashboard) viewDashboard.style.display = 'block';
     }
   };
 
-  if (viewDashboard && viewTransaksi) {
-    if (navDashboard) navDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView(false); });
-    if (navDashboardMobile) navDashboardMobile.addEventListener('click', (e) => { e.preventDefault(); switchView(false); });
-    
-    if (navTransaksi) navTransaksi.addEventListener('click', (e) => { e.preventDefault(); switchView(true); });
-    if (navTransaksiMobile) navTransaksiMobile.addEventListener('click', (e) => { e.preventDefault(); switchView(true); });
-  }
+  if (navDashboard) navDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView('dashboard'); });
+  if (navDashboardMobile) navDashboardMobile.addEventListener('click', (e) => { e.preventDefault(); switchView('dashboard'); });
+  
+  if (navTransaksi) navTransaksi.addEventListener('click', (e) => { e.preventDefault(); switchView('transaksi'); });
+  if (navTransaksiMobile) navTransaksiMobile.addEventListener('click', (e) => { e.preventDefault(); switchView('transaksi'); });
+  
+  if (navDompetMobile) navDompetMobile.addEventListener('click', (e) => { e.preventDefault(); switchView('dompet'); });
+  
+  // Offcanvas Links
+  if (navKategoriMobile) navKategoriMobile.addEventListener('click', (e) => { 
+    e.preventDefault(); 
+    switchView('kategori'); 
+    if(modalLainnya) modalLainnya.style.display = 'none'; 
+  });
+  
+  if (navLainnyaMobile) navLainnyaMobile.addEventListener('click', (e) => {
+    e.preventDefault();
+    if(modalLainnya) modalLainnya.style.display = 'flex';
+  });
+  if (btnCloseLainnya) btnCloseLainnya.addEventListener('click', () => {
+    if(modalLainnya) modalLainnya.style.display = 'none';
+  });
 
   const applyFilters = () => {
     if (!filterSearch) return;
@@ -690,6 +893,41 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   // ================= END ROUTING =================
 
-    // INIT
-    checkSession();
+  // ================= MODAL KATEGORI & DOMPET (Basic Handlers) =================
+  const modalKategori = document.getElementById('modal-kategori');
+  const btnTambahKategori = document.getElementById('btn-tambah-kategori');
+  const btnCloseKategori = document.getElementById('btn-close-kategori');
+  
+  if(btnTambahKategori) {
+    btnTambahKategori.addEventListener('click', () => {
+      document.getElementById('form-kategori-crud').reset();
+      document.getElementById('kategori-action').value = 'tambah';
+      document.getElementById('kategori-id').value = '';
+      document.getElementById('modal-title-kategori').textContent = 'Tambah Kategori';
+      if(modalKategori) modalKategori.style.display = 'flex';
+    });
+  }
+  if(btnCloseKategori) btnCloseKategori.addEventListener('click', () => {
+    if(modalKategori) modalKategori.style.display = 'none';
   });
+
+  const modalDompet = document.getElementById('modal-dompet');
+  const btnTambahDompet = document.getElementById('btn-tambah-dompet');
+  const btnCloseDompet = document.getElementById('btn-close-dompet');
+
+  if(btnTambahDompet) {
+    btnTambahDompet.addEventListener('click', () => {
+      document.getElementById('form-dompet').reset();
+      document.getElementById('dompet-action').value = 'tambah';
+      document.getElementById('dompet-id').value = '';
+      document.getElementById('modal-title-dompet').textContent = 'Tambah Dompet';
+      if(modalDompet) modalDompet.style.display = 'flex';
+    });
+  }
+  if(btnCloseDompet) btnCloseDompet.addEventListener('click', () => {
+    if(modalDompet) modalDompet.style.display = 'none';
+  });
+
+  // INIT
+  checkSession();
+});
