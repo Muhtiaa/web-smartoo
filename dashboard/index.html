@@ -11,6 +11,8 @@
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- ExcelJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 
   <style>
     :root {
@@ -688,6 +690,61 @@
           </div>
 
         </div>
+
+        <!-- ================= VIEW: DOMPET ================= -->
+        <div id="view-dompet" style="display: none;">
+          <div class="table-header">
+            <h3>Dompet & Sumber Dana</h3>
+            <button class="btn-action" style="background: var(--primary); color: white; border-radius: 4px; padding: 8px 15px;" id="btn-tambah-dompet"><i class="fas fa-plus"></i> Tambah Dompet</button>
+          </div>
+          <div class="summary-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 20px;" id="dompet-cards">
+            <!-- Dompet cards dynamically inserted here -->
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nama Dompet</th>
+                  <th>Grup</th>
+                  <th>Saldo (Perkiraan)</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-body-dompet">
+                <tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================= VIEW: KATEGORI ================= -->
+        <div id="view-kategori" style="display: none;">
+          <div class="table-header">
+            <h3>Manajemen Kategori</h3>
+            <button class="btn-action" style="background: var(--primary); color: white; border-radius: 4px; padding: 8px 15px;" id="btn-tambah-kategori"><i class="fas fa-plus"></i> Tambah Kategori</button>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="table-container">
+              <h4 style="margin-bottom:10px; color:var(--primary);"><i class="fas fa-arrow-down"></i> Pemasukan</h4>
+              <table>
+                <thead><tr><th>Nama Kategori</th><th>Aksi</th></tr></thead>
+                <tbody id="table-kategori-pemasukan">
+                  <tr><td colspan="2" style="text-align:center;">Memuat data...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-container">
+              <h4 style="margin-bottom:10px; color:var(--primary);"><i class="fas fa-arrow-up"></i> Pengeluaran</h4>
+              <table>
+                <thead><tr><th>Nama Kategori</th><th>Aksi</th></tr></thead>
+                <tbody id="table-kategori-pengeluaran">
+                  <tr><td colspan="2" style="text-align:center;">Memuat data...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </main>
 
     </div>
@@ -698,9 +755,26 @@
     <ul>
       <li><a href="#" class="active" id="nav-dashboard-mobile"><i class="fas fa-home"></i> Beranda</a></li>
       <li><a href="#" id="nav-transaksi-mobile"><i class="fas fa-exchange-alt"></i> Transaksi</a></li>
-      <li><a href="#" id="btn-logout-mobile" style="color:#e74c3c;"><i class="fas fa-sign-out-alt"></i> Keluar</a></li>
+      <li><a href="#" id="nav-dompet-mobile"><i class="fas fa-wallet"></i> Dompet</a></li>
+      <li><a href="#" id="nav-lainnya-mobile"><i class="fas fa-bars"></i> Lainnya</a></li>
     </ul>
   </nav>
+
+  <!-- OFFCANVAS LAINNYA (Mobile) -->
+  <div id="modal-lainnya" class="modal">
+    <div class="modal-content" style="position: absolute; bottom: 0; left: 0; right: 0; border-radius: 20px 20px 0 0; margin: 0; width: 100%; padding-bottom: 30px;">
+      <div class="modal-header">
+        <h2>Menu Lainnya</h2>
+        <button class="close-modal" id="btn-close-lainnya">&times;</button>
+      </div>
+      <ul class="nav-links" style="padding: 0;">
+        <li><a href="#" id="nav-kategori-mobile" style="color: var(--text); padding: 15px;"><i class="fas fa-tags"></i> Kategori</a></li>
+        <li><a href="#" onclick="exportExcel(); return false;" style="color: var(--text); padding: 15px;"><i class="fas fa-file-export"></i> Export Excel</a></li>
+        <li><a href="#" style="color: var(--text); padding: 15px;"><i class="fas fa-cog"></i> Pengaturan</a></li>
+        <li><a href="#" id="btn-logout-mobile" style="color: #e74c3c; padding: 15px;"><i class="fas fa-sign-out-alt"></i> Keluar</a></li>
+      </ul>
+    </div>
+  </div>
 
   <!-- ================= MODAL CRUD ================= -->
   <div id="crud-modal" class="modal">
@@ -713,6 +787,17 @@
         <input type="hidden" id="form-action" value="tambah">
         <input type="hidden" id="form-id" value="">
         
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="input-group">
+            <label>Tanggal</label>
+            <input type="date" id="form-tanggal" class="retro-input" required>
+          </div>
+          <div class="input-group">
+            <label>Waktu</label>
+            <input type="time" id="form-waktu" class="retro-input" required>
+          </div>
+        </div>
+
         <div class="input-group">
           <label>Jenis Transaksi</label>
           <select id="form-jenis" class="retro-input" required>
@@ -751,9 +836,27 @@
         </div>
         
         <div class="input-group">
-          <label>Sumber Dana</label>
+          <label id="label-sumber-dana">Sumber Dana</label>
           <select id="form-sumber-dana" class="retro-input" required>
             <option value="">Pilih Sumber Dana...</option>
+            <option value="Tunai">Tunai</option>
+            <option value="BCA">BCA</option>
+            <option value="Mandiri">Mandiri</option>
+            <option value="BNI">BNI</option>
+            <option value="BRI">BRI</option>
+            <option value="BSI">BSI</option>
+            <option value="OVO">OVO</option>
+            <option value="GoPay">GoPay</option>
+            <option value="DANA">DANA</option>
+            <option value="ShopeePay">ShopeePay</option>
+            <option value="Lain-lain">Lain-lain</option>
+          </select>
+        </div>
+
+        <div class="input-group" id="tujuan-dana-group" style="display: none;">
+          <label>Tujuan Dana (Untuk Mutasi)</label>
+          <select id="form-tujuan-dana" class="retro-input">
+            <option value="">Pilih Tujuan Dana...</option>
             <option value="Tunai">Tunai</option>
             <option value="BCA">BCA</option>
             <option value="Mandiri">Mandiri</option>
@@ -785,6 +888,103 @@
         <button type="submit" class="btn-login" id="btn-save-crud">SIMPAN TRANSAKSI</button>
         <div id="crud-error" class="error-msg"></div>
       </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL TAMBAH DOMPET ================= -->
+  <div id="modal-dompet" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2 id="modal-title-dompet">Tambah Dompet</h2>
+        <button class="close-modal" id="btn-close-dompet">&times;</button>
+      </div>
+      <form id="form-dompet">
+        <input type="hidden" id="dompet-action" value="tambah">
+        <input type="hidden" id="dompet-id" value="">
+        <div class="input-group">
+          <label>Grup Dompet</label>
+          <select id="dompet-grup" class="retro-input" required>
+            <option value="Tunai">Tunai</option>
+            <option value="Bank">Bank</option>
+            <option value="E-Wallet">E-Wallet</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Nama Dompet</label>
+          <input type="text" id="dompet-nama" class="retro-input" placeholder="Contoh: BCA Pribadi" required>
+        </div>
+        <button type="submit" class="btn-login" id="btn-save-dompet">SIMPAN DOMPET</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL TAMBAH KATEGORI ================= -->
+  <div id="modal-kategori" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2 id="modal-title-kategori">Tambah Kategori</h2>
+        <button class="close-modal" id="btn-close-kategori">&times;</button>
+      </div>
+      <form id="form-kategori-crud">
+        <input type="hidden" id="kategori-action" value="tambah">
+        <input type="hidden" id="kategori-id" value="">
+        <div class="input-group">
+          <label>Jenis</label>
+          <select id="kategori-jenis" class="retro-input" required>
+            <option value="Pemasukan">Pemasukan</option>
+            <option value="Pengeluaran">Pengeluaran</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Nama Kategori</label>
+          <input type="text" id="kategori-nama" class="retro-input" placeholder="Contoh: Belanja Bulanan" required>
+        </div>
+        <button type="submit" class="btn-login" id="btn-save-kategori">SIMPAN KATEGORI</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL EXPORT ================= -->
+  <div id="modal-export" class="modal">
+    <div class="modal-content" style="max-width: 450px;">
+      <div class="modal-header">
+        <h2>Export Data (Excel)</h2>
+        <button class="close-modal" id="btn-close-export">&times;</button>
+      </div>
+      <div class="input-group" style="margin-bottom: 20px;">
+        <label>Rentang Export</label>
+        <select id="export-rentang" class="retro-input">
+          <option value="Semua">Semua Waktu</option>
+          <option value="Harian">Harian (Pilih Tanggal)</option>
+          <option value="Mingguan">Mingguan (7 Hari Terakhir)</option>
+          <option value="Bulanan">Bulanan (Pilih Bulan)</option>
+          <option value="Kustom">Rentang Tanggal Khusus</option>
+        </select>
+      </div>
+      
+      <!-- Export Inputs -->
+      <div id="export-harian-group" class="input-group" style="display: none;">
+        <label>Pilih Tanggal</label>
+        <input type="date" id="export-date-single" class="retro-input">
+      </div>
+      
+      <div id="export-bulanan-group" class="input-group" style="display: none;">
+        <label>Pilih Bulan</label>
+        <input type="month" id="export-month-single" class="retro-input">
+      </div>
+      
+      <div id="export-kustom-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; display: none;">
+        <div class="input-group">
+          <label>Dari Tanggal</label>
+          <input type="date" id="export-date-start" class="retro-input">
+        </div>
+        <div class="input-group">
+          <label>Sampai Tanggal</label>
+          <input type="date" id="export-date-end" class="retro-input">
+        </div>
+      </div>
+
+      <button type="button" class="btn-login" id="btn-do-export" style="background-color: #27ae60;"><i class="fas fa-file-excel"></i> UNDUH EXCEL</button>
     </div>
   </div>
 
