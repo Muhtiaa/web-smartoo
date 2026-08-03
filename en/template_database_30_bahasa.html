@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Template Database Website SMART O² (30 Bahasa)</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f9f9f9;
+  }
+  .instruction {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    color: #856404;
+  }
+  table {
+    border-collapse: collapse;
+    width: max-content;
+    background-color: white;
+  }
+  th, td {
+    border: 1px solid #c0c0c0;
+    padding: 10px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  th {
+    font-weight: bold;
+  }
+  .bg-primary { background-color: #2D5A3D; color: white; }
+  .bg-media { background-color: #1a73e8; color: white; }
+  .bg-id { background-color: #dc3545; color: white; }
+  .bg-en { background-color: #007bff; color: white; }
+  .bg-others { background-color: #6c757d; color: white; }
+  
+  .hint {
+    font-size: 12px;
+    font-weight: normal;
+    display: block;
+    margin-top: 5px;
+    color: #f0f0f0;
+  }
+</style>
+
+  <!-- Hreflang Tags for SEO -->
+  <link rel="alternate" hreflang="id" href="https://smart-oo.me/template_database_30_bahasa.html" />
+  <link rel="alternate" hreflang="en" href="https://smart-oo.me/en/template_database_30_bahasa.html" />
+</head>
+<body>
+
+  <div class="instruction">
+    <h2>📋 CARA MEMASUKKAN KE GOOGLE SHEETS:</h2>
+    <ol>
+      <li>Tekan <b>Ctrl + A</b> (Pilih Semua) di halaman ini.</li>
+      <li>Tekan <b>Ctrl + C</b> (Salin/Copy).</li>
+      <li>Buka Google Sheets kosong milik Anda.</li>
+      <li>Klik di sel paling ujung kiri atas (Sel <b>A1</b>).</li>
+      <li>Tekan <b>Ctrl + V</b> (Tempel/Paste). Semua warna dan struktur kolom tabel (termasuk 30 bahasa) akan otomatis masuk dengan rapi.</li>
+      <li><b>Untuk Membuat Baris Atas Diam (Standby / Freeze):</b> Di menu atas Google Sheets, klik <b>View (Tampilan)</b> > <b>Freeze (Bekukan)</b> > <b>1 Row (1 Baris)</b>.</li>
+    </ol>
+  </div>
+
+  <table id="data-table">
+    <thead>
+      <tr>
+        <!-- PENGATURAN UMUM -->
+        <th class="bg-primary">Kategori<br><span class="hint">(projects / roadmap / education)</span></th>
+        <th class="bg-primary">Badge<br><span class="hint">(Contoh: Premium, Panduan)</span></th>
+        <th class="bg-primary">Tags<br><span class="hint">(Pisahkan dgn koma)</span></th>
+        <th class="bg-primary">Status_Roadmap<br><span class="hint">(SELESAI / SEDANG BERJALAN)</span></th>
+        
+        <!-- MEDIA -->
+        <th class="bg-media">Link_Gambar<br><span class="hint">(URL Gambar Utama)</span></th>
+        <th class="bg-media">Detail_Gambar<br><span class="hint">(URL Gambar Modal Popup)</span></th>
+
+        <!-- BAHASA INDONESIA (DEFAULT) -->
+        <th class="bg-id">Judul_ID<br><span class="hint">(Indonesia)</span></th>
+        <th class="bg-id">Deskripsi_ID</th>
+        <th class="bg-id">Detail_Teks_ID</th>
+
+        <!-- BAHASA INGGRIS -->
+        <th class="bg-en">Judul_EN<br><span class="hint">(English)</span></th>
+        <th class="bg-en">Deskripsi_EN</th>
+        <th class="bg-en">Detail_Teks_EN</th>
+
+        <!-- 28 BAHASA LAINNYA (Total 30) -->
+        <th class="bg-others">Judul_ES<br><span class="hint">(Spanish)</span></th><th class="bg-others">Deskripsi_ES</th><th class="bg-others">Detail_Teks_ES</th>
+        <th class="bg-others">Judul_PT<br><span class="hint">(Portuguese)</span></th><th class="bg-others">Deskripsi_PT</th><th class="bg-others">Detail_Teks_PT</th>
+        <th class="bg-others">Judul_DE<br><span class="hint">(German)</span></th><th class="bg-others">Deskripsi_DE</th><th class="bg-others">Detail_Teks_DE</th>
+        <th class="bg-others">Judul_AR<br><span class="hint">(Arabic)</span></th><th class="bg-others">Deskripsi_AR</th><th class="bg-others">Detail_Teks_AR</th>
+        <th class="bg-others">Judul_FR<br><span class="hint">(French)</span></th><th class="bg-others">Deskripsi_FR</th><th class="bg-others">Detail_Teks_FR</th>
+        <th class="bg-others">Judul_ZH<br><span class="hint">(Chinese)</span></th><th class="bg-others">Deskripsi_ZH</th><th class="bg-others">Detail_Teks_ZH</th>
+        <th class="bg-others">Judul_JA<br><span class="hint">(Japanese)</span></th><th class="bg-others">Deskripsi_JA</th><th class="bg-others">Detail_Teks_JA</th>
+        <th class="bg-others">Judul_RU<br><span class="hint">(Russian)</span></th><th class="bg-others">Deskripsi_RU</th><th class="bg-others">Detail_Teks_RU</th>
+        <th class="bg-others">Judul_KO<br><span class="hint">(Korean)</span></th><th class="bg-others">Deskripsi_KO</th><th class="bg-others">Detail_Teks_KO</th>
+        <th class="bg-others">Judul_HI<br><span class="hint">(Hindi)</span></th><th class="bg-others">Deskripsi_HI</th><th class="bg-others">Detail_Teks_HI</th>
+        <th class="bg-others">Judul_IT<br><span class="hint">(Italian)</span></th><th class="bg-others">Deskripsi_IT</th><th class="bg-others">Detail_Teks_IT</th>
+        <th class="bg-others">Judul_TR<br><span class="hint">(Turkish)</span></th><th class="bg-others">Deskripsi_TR</th><th class="bg-others">Detail_Teks_TR</th>
+        <th class="bg-others">Judul_NL<br><span class="hint">(Dutch)</span></th><th class="bg-others">Deskripsi_NL</th><th class="bg-others">Detail_Teks_NL</th>
+        
+        <!-- Tambahan 15 Bahasa Baru untuk SEO Global Asia/Eropa -->
+        <th class="bg-others">Judul_TH<br><span class="hint">(Thai)</span></th><th class="bg-others">Deskripsi_TH</th><th class="bg-others">Detail_Teks_TH</th>
+        <th class="bg-others">Judul_VI<br><span class="hint">(Vietnamese)</span></th><th class="bg-others">Deskripsi_VI</th><th class="bg-others">Detail_Teks_VI</th>
+        <th class="bg-others">Judul_TL<br><span class="hint">(Filipino)</span></th><th class="bg-others">Deskripsi_TL</th><th class="bg-others">Detail_Teks_TL</th>
+        <th class="bg-others">Judul_MS<br><span class="hint">(Malay)</span></th><th class="bg-others">Deskripsi_MS</th><th class="bg-others">Detail_Teks_MS</th>
+        <th class="bg-others">Judul_BN<br><span class="hint">(Bengali)</span></th><th class="bg-others">Deskripsi_BN</th><th class="bg-others">Detail_Teks_BN</th>
+        <th class="bg-others">Judul_PL<br><span class="hint">(Polish)</span></th><th class="bg-others">Deskripsi_PL</th><th class="bg-others">Detail_Teks_PL</th>
+        <th class="bg-others">Judul_UK<br><span class="hint">(Ukrainian)</span></th><th class="bg-others">Deskripsi_UK</th><th class="bg-others">Detail_Teks_UK</th>
+        <th class="bg-others">Judul_SV<br><span class="hint">(Swedish)</span></th><th class="bg-others">Deskripsi_SV</th><th class="bg-others">Detail_Teks_SV</th>
+        <th class="bg-others">Judul_FI<br><span class="hint">(Finnish)</span></th><th class="bg-others">Deskripsi_FI</th><th class="bg-others">Detail_Teks_FI</th>
+        <th class="bg-others">Judul_EL<br><span class="hint">(Greek)</span></th><th class="bg-others">Deskripsi_EL</th><th class="bg-others">Detail_Teks_EL</th>
+        <th class="bg-others">Judul_CS<br><span class="hint">(Czech)</span></th><th class="bg-others">Deskripsi_CS</th><th class="bg-others">Detail_Teks_CS</th>
+        <th class="bg-others">Judul_RO<br><span class="hint">(Romanian)</span></th><th class="bg-others">Deskripsi_RO</th><th class="bg-others">Detail_Teks_RO</th>
+        <th class="bg-others">Judul_HU<br><span class="hint">(Hungarian)</span></th><th class="bg-others">Deskripsi_HU</th><th class="bg-others">Detail_Teks_HU</th>
+        <th class="bg-others">Judul_DA<br><span class="hint">(Danish)</span></th><th class="bg-others">Deskripsi_DA</th><th class="bg-others">Detail_Teks_DA</th>
+        <th class="bg-others">Judul_NO<br><span class="hint">(Norwegian)</span></th><th class="bg-others">Deskripsi_NO</th><th class="bg-others">Detail_Teks_NO</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>projects</td>
+        <td>Premium AI</td>
+        <td>WhatsApp, Bot, AI</td>
+        <td></td>
+        <td>https://link-gambar.com/1.jpg</td>
+        <td>https://link-gambar.com/detail.jpg</td>
+        <td>Bot Keuangan AI</td>
+        <td>Bot untuk mencatat...</td>
+        <td>Fitur utama: 1. Auto Reply...</td>
+        <td>AI Finance Bot</td>
+        <td>Bot to track...</td>
+        <td>Key Features: 1. Auto Reply...</td>
+        <!-- Kosong untuk 28 bahasa lainnya -->
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+      <tr>
+        <td>roadmap</td>
+        <td></td>
+        <td></td>
+        <td>SEDANG BERJALAN</td>
+        <td></td>
+        <td></td>
+        <td>Tahap Pengembangan</td>
+        <td>Membangun arsitektur...</td>
+        <td></td>
+        <td>Development Phase</td>
+        <td>Building architecture...</td>
+        <td></td>
+        <!-- Kosong untuk 28 bahasa lainnya -->
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>

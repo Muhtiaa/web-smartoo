@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SMART O² — Asisten Catatan Keuangan via WhatsApp">
+  <title>Asisten Catatan Keuangan | SMART O²</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+  
+  <!-- Stylesheet (Menggunakan style brutalism website utama) -->
+  <link rel="stylesheet" href="../css/style.css">
+  
+  <style>
+    /* Styling khusus Halaman Produk */
+    
+    /* --- HERO SECTION 2 COLUMNS --- */
+    .product-hero {
+      padding: 100px 0 80px 0;
+      background: var(--bg-primary);
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 50px;
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      .hero-grid { grid-template-columns: 1fr; text-align: center; }
+    }
+    .product-hero-title {
+      font-size: 3.5rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      margin-bottom: 20px;
+      line-height: 1.1;
+    }
+    .product-hero-subtitle {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    
+    /* Mockup HP Profesional */
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+    .hero-visual::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: var(--primary);
+      top: 15px;
+      left: 15px;
+      z-index: 0;
+      border: 4px solid var(--text-dark);
+    }
+    .mockup-professional {
+      background: #f8f9fa;
+      border: 4px solid var(--text-dark);
+      width: 100%;
+      max-width: 380px;
+      z-index: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .mockup-header-pro {
+      background: #075E54;
+      color: white;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      border-bottom: 3px solid var(--text-dark);
+    }
+    .mockup-header-pro img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; background: white;}
+    .mockup-header-pro div { line-height: 1.2; }
+    .mockup-header-pro strong { font-size: 1.1rem; }
+    .mockup-header-pro span { font-size: 0.8rem; opacity: 0.8; }
+    
+    .mockup-body-pro {
+      background: #e5ddd0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      height: 350px;
+      overflow-y: auto;
+    }
+    .chat-bubble-pro {
+      padding: 12px 16px;
+      border: 2px solid var(--text-dark);
+      font-size: 0.95rem;
+      max-width: 85%;
+      line-height: 1.4;
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+    }
+    .chat-user-pro { background: #dcf8c6; align-self: flex-end; border-radius: 12px 0 12px 12px; }
+    .chat-ai-pro { background: #ffffff; align-self: flex-start; border-radius: 0 12px 12px 12px; }
+    
+    /* --- SECTIONS --- */
+    .product-section {
+      padding: 80px 0;
+      border-top: 4px solid var(--text-dark);
+    }
+    
+    /* Tombol Dashboard Nav */
+    .btn-dashboard-nav {
+      background: var(--text-dark);
+      color: white;
+      border: 2px solid var(--text-dark);
+      padding: 8px 16px;
+      font-weight: 700;
+      box-shadow: 3px 3px 0 var(--primary);
+      transition: all 0.2s ease;
+      text-decoration: none;
+      margin-left: 10px;
+    }
+    .btn-dashboard-nav:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 0px 0px 0 var(--primary);
+    }
+
+    /* Grids */
+    .features-grid, .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin-top: 40px;
+    }
+
+    .brutal-card {
+      background: var(--bg-secondary);
+      border: 4px solid var(--text-dark);
+      padding: 30px;
+      box-shadow: 8px 8px 0 var(--text-dark);
+      transition: transform 0.2s;
+      /* Flexbox agar tombol bisa nempel di bawah meskipun tinggi card berbeda */
+      display: flex;
+      flex-direction: column;
+    }
+    .brutal-card:hover { transform: translateY(-5px); }
+    .brutal-card h3 { font-size: 1.5rem; margin-bottom: 15px; border-bottom: 2px solid var(--text-dark); padding-bottom: 10px; }
+    
+    /* Harga */
+    .price-tag { font-size: 2.5rem; font-weight: 900; color: var(--primary); margin-bottom: 20px; }
+    .ul-brutal { list-style: none; padding: 0; margin-bottom: 30px;}
+    .ul-brutal li { margin-bottom: 12px; position: relative; padding-left: 25px; line-height: 1.4; }
+    .ul-brutal li::before { content: "➔"; position: absolute; left: 0; color: var(--primary); font-weight: bold; }
+    .btn-pricing { margin-top: auto; } /* Dorong tombol ke bawah */
+
+    /* --- PANDUAN ACCORDION (Style mirip Lapis 1) --- */
+    .accordion-container {
+      max-width: 800px;
+      margin: 40px auto 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    details.brutal-accordion {
+      background: #efe9e1; /* Warna cream khas Lapis 1 */
+      border: 3px solid var(--text-dark);
+      box-shadow: 4px 4px 0 var(--text-dark);
+      transition: all 0.2s;
+    }
+    details.brutal-accordion summary {
+      padding: 20px;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--text-dark); /* Diubah agar teks lebih jelas dan kontras */
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    details.brutal-accordion summary::-webkit-details-marker { display: none; }
+    details.brutal-accordion summary::after {
+      content: "▼";
+      font-size: 1.2rem;
+      color: var(--text-dark);
+      transition: transform 0.3s;
+    }
+    details.brutal-accordion[open] summary::after { transform: rotate(180deg); }
+    details.brutal-accordion .accordion-content {
+      padding: 0 20px 20px 75px; /* Beri jarak untuk lingkaran angka */
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+    .step-number-circle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+      margin-right: 15px;
+      border: 2px solid var(--text-dark);
+    }
+
+    @media (max-width: 768px) {
+      .product-hero-title { font-size: 2.5rem; }
+      details.brutal-accordion summary {
+        padding: 15px;
+        font-size: 1rem;
+      }
+      details.brutal-accordion .accordion-content {
+        padding: 0 15px 15px 15px; /* Hilangkan padding 75px di mobile agar tidak terpotong */
+      }
+      .step-number-circle {
+        margin-right: 10px;
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+      }
+      .mockup-professional { max-width: 300px; }
+      .product-section { padding: 40px 0; }
+    }
+      background: #F47B20 !important; /* Paksa Bulatan Oranye */
+      color: #FFFFFF !important; /* Paksa Teks Putih */
+      border: 2px solid var(--text-dark);
+      border-radius: 50%;
+      margin-right: 15px;
+      font-size: 1.2rem;
+    }
+    
+    /* Sub-list panduan khusus */
+    .panduan-sublist { list-style: none; padding-left: 0; margin-top: 15px;}
+    .panduan-sublist li { margin-bottom: 15px; padding-left: 20px; position: relative; }
+    .panduan-sublist li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+    .cmd-list { list-style: none; padding-left: 0; margin-top: 15px; }
+    .cmd-list li { margin-bottom: 10px; padding-left: 20px; position: relative; }
+    .cmd-list li::before { content: "➔"; position: absolute; left: 0; color: var(--primary); }
+  </style>
+
+  <!-- Hreflang Tags for SEO -->
+  <link rel="alternate" hreflang="id" href="https://smart-oo.me/asisten-catatan-keuangan.html" />
+  <link rel="alternate" hreflang="en" href="https://smart-oo.me/en/asisten-catatan-keuangan.html" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-container">
+      <!-- MENGGUNAKAN ID logo-img AGAR KODE RAHASIA CMS 5 KLIK BERFUNGSI -->
+      <a href="index.html" class="nav-logo notranslate" translate="no">
+        <img src="../assets/logo.png" alt="SMART O² Logo" class="logo-img" id="logo-img">
+        SMART <span class="logo-accent">O²</span>
+      </a>
+
+      <div class="nav-menu" id="nav-menu">
+        <a href="#fitur" class="nav-link">Fitur</a>
+        <a href="#panduan" class="nav-link">Panduan</a>
+        <a href="#harga" class="nav-link active">Harga</a>
+        <a href="#footer" class="nav-link">Informasi</a>
+        <!-- Tombol Lapis 3 -->
+        <a href="dashboard.html" class="btn-dashboard-nav">DASHBOARD ➔</a>
+      </div>
+
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span class=""></span><span class=""></span><span class=""></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="product-hero fade-in visible">
+    <div class="container hero-grid">
+      <div class="hero-text">
+        <h1 class="product-hero-title">Ribet Catat Keuangan?<br><span style="color:var(--primary);" class="">Cukup Lewat WhatsApp</span></h1>
+        <p class="product-hero-subtitle">
+          SMART O² langsung mencatat dan mengkategorikan keuangan Anda secara otomatis. 
+          <strong>Dapatkan laporan harian, mingguan, dan bulanan</strong> hadir di genggaman Anda tanpa perlu input manual yang melelahkan.
+        </p>
+        <a href="#harga" class="btn btn-primary" style="font-size:1.1rem; padding: 15px 30px;">Lihat Paket Langganan ↓</a>
+      </div>
+      
+      <div class="hero-visual">
+        <div class="mockup-professional">
+          <div class="mockup-header-pro">
+            <img src="../assets/logo.png" alt="Bot" class=""> 
+            <div>
+              <strong>SMART O² Asisten</strong><br>
+              <span class="">Online</span>
+            </div>
+          </div>
+          <div class="mockup-body-pro">
+            <div class="chat-bubble-pro chat-user-pro">/catat Beli kopi Starbucks 55rb pakai cash</div>
+            <div class="chat-bubble-pro chat-ai-pro">
+              <strong>Berhasil Dicatat! ✅</strong><br>
+              💰 Nominal: Rp 55.000<br>
+              🏷️ Kategori: Jajan<br>
+              💳 Metode: Cash
+            </div>
+            <div class="chat-bubble-pro chat-user-pro">/laporan bulanan</div>
+            <div class="chat-bubble-pro chat-ai-pro">📊 <strong>Laporan Bulan Ini:</strong><br>Pengeluaran: Rp 3.450.000<br>Pemasukan: Rp 8.000.000<br>Saldo: Rp 4.550.000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FITUR -->
+  <section id="fitur" class="product-section">
+    <div class="container">
+      <div class="section-header text-center" style="text-align: center;">
+        <span class="section-label">Solusi Cerdas</span>
+        <h2 class="">Fitur Unggulan Kami</h2>
+      </div>
+      
+      <div class="features-grid">
+        <div class="brutal-card fade-in visible">
+          <h3 class="">🎙️ Voice NOTE (Audio)</h3>
+          <p class="">Catat pengeluaran cukup dengan mengirimkan Voice Note. SMART O² kami yang canggih akan mengubah suara Anda menjadi pencatatan teks yang rapi dan terstruktur.</p>
+        </div>
+        <div class="brutal-card fade-in visible">
+          <h3 class="">📸 Deteksi Struk (Gambar)</h3>
+          <p class="">Kirim foto struk belanja, dan biarkan Asisten Cerdas kami mengekstrak nominal, barang, dan kategori secara otomatis tanpa Anda perlu mengetik satu huruf pun.</p>
+        </div>
+        <div class="brutal-card fade-in visible">
+          <h3 class="">📄 Upload File Dokumen</h3>
+          <p class="">Memiliki tagihan dalam bentuk PDF atau dokumen? Cukup unggah file tersebut ke WhatsApp, dan sistem akan langsung merekapnya menjadi data pengeluaran dengan akurat.</p>
+        </div>
+        <div class="brutal-card fade-in visible">
+          <h3 class="">📊 Realtime Dashboard</h3>
+          <p class="">Pantau arus kas, sisa hutang, dan laporan perbandingan bulan lalu melalui Web App Dashboard eksklusif kami yang terhubung langsung dengan WhatsApp Anda.</p>
+        </div>
+        <div class="brutal-card fade-in visible">
+          <h3 class="">🔒 Privasi &amp; Keamanan Terjamin</h3>
+          <p class="">Data keuangan Anda sangat berharga. Kami menggunakan enkripsi tingkat tinggi dan arsitektur database modern untuk memastikan hanya Anda yang memiliki akses ke data tersebut.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANDUAN (ACCORDION STYLE) -->
+  <section id="panduan" class="product-section" style="background: var(--text-dark); color: var(--bg-primary);">
+    <div class="container">
+      <div class="section-header text-center" style="text-align: center;">
+        <span class="section-label" style="background: var(--bg-primary); color: var(--text-dark);">Panduan Singkat</span>
+        <h2 style="color: white;" class="">Cara Mudah Menggunakan SMART O²</h2>
+      </div>
+      
+      <div class="accordion-container fade-in visible">
+        
+        <details class="brutal-accordion" open="">
+          <summary><div style="display:flex; align-items:center;"><span class="step-number-circle">1</span> KETIK /MENU</div></summary>
+          <div class="accordion-content">
+            <p class="">Perintah ini adalah gerbang utama Anda. Menampilkan daftar perintah yang bisa Anda gunakan. Di bawah ini adalah daftar 14 command SMART O² - PRO:</p>
+            <ul class="cmd-list">
+              <li class=""><strong>/menu</strong> ➔ Mengecek daftar perintah.</li>
+              <li class=""><strong>/saldo</strong> ➔ Mengecek total saldo saat ini. <em>(Contoh: /saldo atau Cek saldo berdasarkan tanggal /saldo 27 juli)</em></li>
+              <li class=""><strong>/catat [Keterangan]</strong> ➔ Mencatat transaksi. <em>(Contoh: /catat beli makan 50rb tunai, terima gaji 14jt BCA, naik ojek 20rb Gopay, dapat bonus 500rb BCA, dst)</em></li>
+              <li class=""><strong>/riwayat [Tanggal]</strong> ➔ Cek transaksi hari tertentu. <em>(Contoh: /riwayat 3 april)</em></li>
+              <li class=""><strong>/hapus [Keterangan]</strong> ➔ Menghapus catatan. <em>(Contoh: /hapus 28 juli bensin)</em></li>
+              <li class=""><strong>/kategori [Jenis]</strong> ➔ Cek pengeluaran khusus. <em>(Contoh: /kategori makan)</em></li>
+              <li class=""><strong>/bank</strong> ➔ Cek saldo Bank apabila mencatat.</li>
+              <li class=""><strong>/ewallet</strong> ➔ Cek saldo E-Wallet apabila mencatat.</li>
+              <li class=""><strong>/tabungan</strong> ➔ Cek tabungan &amp; investasi.</li>
+              <li class=""><strong>/edit [Keterangan]</strong> ➔ Memperbaiki catatan. <em>(Contoh: /edit 28 juli makan jadi 60rb)</em></li>
+              <li class=""><strong>/export</strong> ➔ Download Laporan Excel.</li>
+              <li class=""><strong>/utang [Keterangan]</strong> ➔ Daftar utang.</li>
+              <li class=""><strong>/piutang</strong> ➔ Daftar piutang.</li>
+              <li class=""><strong>/budget [Kategori]</strong> ➔ Set batas pengeluaran. <em>(Contoh: /budget Makan 500rb)</em></li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="brutal-accordion" open="">
+          <summary><div style="display:flex; align-items:center;"><span class="step-number-circle">2</span> KETIK /CATAT</div></summary>
+          <div class="accordion-content">
+            <p class="">SMART O² mendukung 4 cara revolusioner untuk mencatat transaksi keuangan Anda secara fleksibel:</p>
+            <ul class="panduan-sublist">
+              <li class=""><strong>Catat via Chat Biasa:</strong> Ketik perintah langsung di chat. <br><em>Contoh: /catat beli kopi 30rb cash, gajian 14jt BCA, dan seterusnya.</em></li>
+              <li class=""><strong>Catat via Voice Note:</strong> Rekam suara Anda. <br><em>Syarat: Ucapkan di awal kalimat dengan jelas <strong>"AYO CATAT"</strong> diikuti beli kopi 30rb cash, dll.</em></li>
+              <li class=""><strong>Catat via Gambar/Foto:</strong> Upload foto struk belanja Anda. <br><em>Syarat: <strong>WAJIB</strong> sertakan caption teks: <strong>/catat</strong>, maka SMART O² akan membacanya otomatis.</em></li>
+              <li class=""><strong>Catat via File Dokumen:</strong> Upload file invoice atau struk PDF Anda. <br><em>Syarat: <strong>WAJIB</strong> sertakan caption teks: <strong>/catat</strong>, maka SMART O² akan mengekstrak isinya.</em></li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="brutal-accordion" open="">
+          <summary><div style="display:flex; align-items:center;"><span class="step-number-circle">3</span> DAFTAR KATEGORI</div></summary>
+          <div class="accordion-content">
+            <p class="">Sistem AI kami telah dilatih untuk secara otomatis mengklasifikasikan transaksi Anda ke dalam kategori baku yang ada di sistem, antara lain: <strong>Makanan, Minuman, Transportasi, Belanja Bulanan, Gaji, Bisnis, Hutang, Piutang, Hiburan, Listrik, Internet, Kesehatan</strong>, dan puluhan kategori lainnya. Anda hanya perlu mencatat natural, dan AI akan menentukan kategorinya.</p>
+          </div>
+        </details>
+
+        <details class="brutal-accordion">
+          <summary><div style="display:flex; align-items:center;"><span class="step-number-circle">4</span> SMART O² MEMPROSES</div></summary>
+          <div class="accordion-content">
+            <p class="">Mesin kecerdasan buatan (AI) kami akan mengeksekusi catatan Anda secara instan. Ia mendeteksi niat, menyaring nominal angka, mencocokkan metode pembayaran (Cash, Bank, e-Wallet), lalu menyimpannya secara aman di *Cloud Database*. Dalam hitungan detik, Anda akan menerima balasan konfirmasi bahwa uang Anda telah rapi tercatat di pembukuan.</p>
+          </div>
+        </details>
+
+        <details class="brutal-accordion">
+          <summary><div style="display:flex; align-items:center;"><span class="step-number-circle">5</span> DASHBOARD KEUANGAN</div></summary>
+          <div class="accordion-content">
+            <p class="">Bagi pengguna Pro &amp; Premium, nikmati visualisasi arus kas Anda melalui Web Dashboard kami dengan langkah berikut:</p>
+            <ul class="panduan-sublist">
+              <li class="">Kirim pesan <strong>/login</strong> ke bot WhatsApp SMART O².</li>
+              <li class="">Bot akan membalas dengan memberikan 6 digit kode OTP yang bersifat rahasia dan sementara.</li>
+              <li class="">Buka halaman Dashboard (klik tombol DASHBOARD di menu navigasi atas website ini).</li>
+              <li class="">Masukkan Nomor WhatsApp dan kode OTP tersebut ke kolom yang disediakan. Anda akan langsung masuk ke panel grafik interaktif!</li>
+            </ul>
+          </div>
+        </details>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- HARGA -->
+  <section id="harga" class="product-section">
+    <div class="container">
+      <div class="section-header text-center" style="text-align: center;">
+        <span class="section-label">Investasi Terbaik</span>
+        <h2 class="">Pilih Paket Berlangganan Anda</h2>
+      </div>
+      <div class="pricing-grid">
+        <!-- BASIC -->
+        <div class="brutal-card fade-in visible">
+          <h3 class="">BASIC</h3>
+          <div class="price-tag">Rp 17.900<span style="font-size:1rem; color:var(--text-dark);" class="">/bln</span></div>
+          <ul class="ul-brutal">
+            <li class="">Catat via Chat Teks</li>
+            <li class="">Rekap Laporan Harian/Bulanan</li>
+            <li class="">SMART O² Aktif 24/7 Tiada Henti</li>
+          </ul>
+          <a href="https://wa.me/6285817266784" target="_blank" class="btn btn-outline btn-pricing" style="width:100%; text-align:center;">Beli Sekarang</a>
+        </div>
+        <!-- PRO -->
+        <div class="brutal-card fade-in visible" style="background: var(--primary);">
+          <h3 class="">PRO</h3>
+          <div class="price-tag" style="color:var(--text-dark);">Rp 28.900<span style="font-size:1rem;" class="">/bln</span></div>
+          <ul class="ul-brutal">
+            <li class=""><strong>Semua Fitur Basic</strong></li>
+            <li class="">Catat via Voice Note (Audio)</li>
+            <li class="">Catat via Gambar &amp; File Dokumen</li>
+            <li class="">Akses Eksklusif Web Dashboard</li>
+          </ul>
+          <a href="https://wa.me/6285817266784" target="_blank" class="btn btn-primary btn-pricing" style="width:100%; text-align:center; background:var(--text-dark); color:white;">Beli Sekarang</a>
+        </div>
+        <!-- PREMIUM -->
+        <div class="brutal-card fade-in visible">
+          <h3 class="">PREMIUM</h3>
+          <div class="price-tag">Rp 34.900<span style="font-size:1rem; color:var(--text-dark);" class="">/bln</span></div>
+          <ul class="ul-brutal">
+            <li class=""><strong>Semua Fitur Pro</strong></li>
+            <li class="">Manajemen Hutang-Piutang Spesifik</li>
+            <li class="">Pengingat Target Budgeting</li>
+            <li class="">*Voice Reply* Langsung dari Bot</li>
+          </ul>
+          <a href="https://wa.me/6285817266784" target="_blank" class="btn btn-outline btn-pricing" style="width:100%; text-align:center;">Beli Sekarang</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       FOOTER (Sama Persis Seperti index.html)
+       ============================================================ -->
+  <footer class="footer" id="footer">
+    <div class="container">
+      <div class="footer-grid">
+
+        <!-- Brand -->
+        <div class="footer-brand">
+          <a href="index.html" class="footer-logo notranslate" translate="no">
+            <img src="../assets/logo.png" alt="SMART O² Logo" class="footer-logo-img">
+            SMART <span class="logo-accent">O²</span>
+          </a>
+          <p class="">
+            Developer n8n &amp; AI Automation. Membangun bot cerdas dan solusi otomasi bisnis 
+            yang terhubung langsung ke WhatsApp, Telegram, dan platform favorit Anda.
+          </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="">Quick Links</h4>
+          <div class="footer-links">
+            <a href="index.html#hero" class="">Home</a>
+            <a href="index.html#ai-solutions" class="">AI Solutions</a>
+            <a href="index.html#projects" class="">Projects</a>
+            <a href="index.html#roadmap" class="">Roadmap</a>
+            <a href="index.html#education" class="">Education</a>
+          </div>
+        </div>
+
+        <!-- Legal & Bantuan (NEW) -->
+        <div>
+          <h4 class="">Legal &amp; Bantuan</h4>
+          <div class="footer-links">
+            <a href="faq.html" class="">FAQ (Tanya Jawab)</a>
+            <a href="terms.html" class="">Syarat &amp; Ketentuan</a>
+            <a href="refund.html" class="">Kebijakan Pengembalian Dana</a>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div>
+          <h4 class="">Hubungi Kami</h4>
+          <div class="footer-contact">
+            <div class="footer-address">
+              📍 <strong>Alamat:</strong><br>
+              Kp. Rawadas RT008/RW003<br>
+              Pondok kopi, Duren Sawit<br>
+              Jakarta timur
+            </div>
+            <a href="mailto:1hfpras@gmail.com" class="">
+              ✉️ 1hfpras@gmail.com
+            </a>
+            <a href="https://wa.me/6285817266784" target="_blank" rel="noopener noreferrer" class="">
+              💬 CS WhatsApp: 085817266784
+            </a>
+            <a href="https://t.me/Smartoo_GenTwo_bot" target="_blank" rel="noopener noreferrer" class="">
+              ✈️ Telegram Bot
+            </a>
+            <a href="https://www.facebook.com/share/18tG7qnXM5/" target="_blank" rel="noopener noreferrer" class="">
+              📘 Facebook Page
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <span class="">© 2026 SMART O². All rights reserved.</span>
+        <div class="social-links">
+          <a href="https://t.me/Smartoo_GenTwo_bot" target="_blank" rel="noopener noreferrer" aria-label="Telegram" class="">✈️</a>
+          <a href="https://www.facebook.com/share/18tG7qnXM5/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="">📘</a>
+          <a href="mailto:1hfpras@gmail.com" aria-label="Email" class="">✉️</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+
+
+</body></html>

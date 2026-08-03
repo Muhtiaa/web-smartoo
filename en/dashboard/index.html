@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dashboard | SMART O²</title>
+  
+  <!-- Favicon for Icons -->
+  <link rel="icon" type="image/png" href="../../assets/logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --primary: #1b3c35;
+      --accent: #e67e22;
+      --bg: #f4f6f8;
+      --text: #333333;
+      --card-bg: #ffffff;
+      --border: 2px solid #000000;
+      --shadow: 4px 4px 0px #000000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* --- LOGIN SECTION --- */
+    #login-section {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .login-box {
+      background: var(--card-bg);
+      border: var(--border);
+      box-shadow: 8px 8px 0px #000;
+      padding: 40px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      border-radius: 8px;
+    }
+
+    .login-box img {
+      width: 80px;
+      margin-bottom: 20px;
+    }
+
+    .login-box h2 {
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+
+    .login-box p {
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 0.9rem;
+    }
+
+    .retro-input {
+      width: 100%;
+      padding: 12px;
+      border: var(--border);
+      border-radius: 4px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .retro-input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: white;
+      border: var(--border);
+      box-shadow: var(--shadow);
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+
+    .btn-login:active {
+      transform: translate(4px, 4px);
+      box-shadow: 0 0 0 #000;
+    }
+
+    .error-msg {
+      color: red;
+      font-size: 0.9rem;
+      margin-top: 15px;
+      display: none;
+      font-weight: bold;
+    }
+
+    /* --- DASHBOARD LAYOUT --- */
+    #dashboard-section {
+      display: none; /* Hidden by default */
+      width: 100%;
+      height: 100%;
+    }
+
+    .wrapper {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* SIDEBAR (Desktop) */
+    .sidebar {
+      width: 250px;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      border-right: var(--border);
+      flex-shrink: 0;
+    }
+
+    .sidebar-brand {
+      padding: 20px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-brand img {
+      width: 30px;
+    }
+
+    .nav-links {
+      flex-grow: 1;
+      padding: 20px 0;
+      list-style: none;
+    }
+
+    .nav-links li {
+      margin-bottom: 5px;
+    }
+
+    .nav-links a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border-left: 4px solid var(--accent);
+    }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 30px;
+      background: var(--bg);
+      padding-bottom: 100px; /* For mobile nav */
+    }
+
+    /* HEADER */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .greeting h1 {
+      font-size: 1.8rem;
+      color: var(--primary);
+    }
+
+    .greeting p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .header-actions button {
+      padding: 10px 20px;
+      background: var(--accent);
+      color: white;
+      border: var(--border);
+      box-shadow: 2px 2px 0 #000;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .header-actions button:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0 0 0 #000;
+    }
+
+    /* SUMMARY CARDS */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .card-saldo .card-value { color: var(--primary); }
+    .card-masuk .card-value { color: #27ae60; }
+    .card-keluar .card-value { color: #c0392b; }
+    .card-utang .card-value { color: #e67e22; }
+    .card-piutang .card-value { color: #2980b9; }
+
+    /* CHARTS SECTION */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 900px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+
+    .chart-box {
+      background: var(--card-bg);
+      border: var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      position: relative;
+      height: 380px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-box h3 {
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+      flex-shrink: 0;
+    }
+    
+    .chart-container-inner {
+      flex-grow: 1;
+      position: relative;
+    }
+
+    /* TABLE SECTION */
+    .table-container {
+      background: var(--card-bg);
+      border: var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      font-weight: bold;
+      color: #666;
+    }
+
+    .btn-action {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0 5px;
+    }
+    .btn-edit { color: #2980b9; }
+    .btn-delete { color: #c0392b; }
+
+    /* BOTTOM NAV (Mobile) */
+    .bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--primary);
+      border-top: var(--border);
+      z-index: 100;
+    }
+
+    .bottom-nav ul {
+      display: flex;
+      justify-content: space-around;
+      list-style: none;
+      padding: 10px 0;
+    }
+
+    .bottom-nav a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.7rem;
+      gap: 5px;
+    }
+
+    .bottom-nav a.active {
+      color: var(--accent);
+    }
+
+    .bottom-nav i {
+      font-size: 1.2rem;
+    }
+
+    /* MODAL CRUD */
+    .modal {
+      display: none;
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.5);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-content {
+      background: #fff;
+      border: var(--border);
+      box-shadow: 8px 8px 0px #000;
+      padding: 30px;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 8px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: -30px -30px 20px -30px;
+      padding: 20px 30px;
+      background: var(--primary);
+      color: white;
+      border-bottom: var(--border);
+      border-radius: 8px 8px 0 0;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: white;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: white;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .close-modal:hover {
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .bottom-nav { display: block; }
+      .main-content { padding: 15px; padding-bottom: 80px; }
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+
+  <!-- Hreflang Tags for SEO -->
+  <link rel="alternate" hreflang="id" href="https://smart-oo.me/dashboard/" />
+  <link rel="alternate" hreflang="en" href="https://smart-oo.me/en/dashboard/" />
+</head>
+<body>
+
+  <!-- ================= LOGIN SECTION ================= -->
+  <div id="login-section">
+    <div class="login-box">
+      <img src="../../assets/logo.png" alt="SMART O2" onerror="this.src='https://via.placeholder.com/80'">
+      <h2>SMART O² Login</h2>
+      <p>Masuk untuk mengelola keuangan Anda</p>
+      
+      <div class="input-group">
+        <label>Nomor WhatsApp</label>
+        <input type="text" id="login-phone" class="retro-input" placeholder="0812...">
+      </div>
+      
+      <div class="input-group">
+        <label>Kode OTP (6 Digit)</label>
+        <input type="text" id="login-otp" class="retro-input" placeholder="XXXXXX" maxlength="6">
+      </div>
+
+      <button id="btn-login" class="btn-login">MASUK DASHBOARD</button>
+      <div id="login-error" class="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- ================= DASHBOARD SECTION ================= -->
+  <div id="dashboard-section">
+    <div class="wrapper">
+      
+      <!-- SIDEBAR DESKTOP -->
+      <nav class="sidebar">
+        <div class="sidebar-brand">
+          <img src="../../assets/logo.png" alt="Logo" onerror="this.style.display='none'">
+          SMART O²
+        </div>
+        <ul class="nav-links">
+          <li><a href="#" class="active" id="nav-dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+          <li><a href="#" id="nav-transaksi"><i class="fas fa-exchange-alt"></i> Transaksi</a></li>
+          <li><a href="#" onclick="alert('Fitur Dompet sedang dalam pengembangan!'); return false;"><i class="fas fa-wallet"></i> Dompet</a></li>
+          <li><a href="#" onclick="alert('Fitur Kategori sedang dalam pengembangan!'); return false;"><i class="fas fa-tags"></i> Kategori</a></li>
+          <li><a href="#" onclick="exportCSV(); return false;"><i class="fas fa-file-export"></i> Export</a></li>
+          <li><a href="#" onclick="alert('Fitur Pengaturan sedang dalam pengembangan!'); return false;"><i class="fas fa-cog"></i> Pengaturan</a></li>
+        </ul>
+        <div class="sidebar-footer">
+          <a href="#" id="btn-logout-sidebar" style="color:#e74c3c; text-decoration:none; display:flex; align-items:center; gap:10px;"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+        </div>
+      </nav>
+
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+        <!-- Header -->
+        <header class="dashboard-header">
+          <div class="greeting">
+            <h1 id="user-greeting">Halo, Pengguna</h1>
+            <p id="current-date">01 Aug 2026</p>
+          </div>
+          <div class="header-actions">
+            <button id="btn-catat-transaksi"><i class="fas fa-plus"></i> Catat Transaksi</button>
+          </div>
+        </header>
+
+        <!-- ================= VIEW: DASHBOARD ================= -->
+        <div id="view-dashboard">
+          <!-- Summary Cards (5 Cards) -->
+          <div class="summary-grid">
+            <div class="card card-saldo">
+              <div class="card-title">Total Saldo <i class="fas fa-wallet"></i></div>
+              <div class="card-value" id="val-saldo">Rp 0</div>
+            </div>
+            <div class="card card-masuk">
+              <div class="card-title">Pemasukan <i class="fas fa-arrow-down"></i></div>
+              <div class="card-value" id="val-pemasukan">Rp 0</div>
+            </div>
+            <div class="card card-keluar">
+              <div class="card-title">Pengeluaran <i class="fas fa-arrow-up"></i></div>
+              <div class="card-value" id="val-pengeluaran">Rp 0</div>
+            </div>
+            <div class="card card-utang">
+              <div class="card-title">Utang <i class="fas fa-hand-holding-usd"></i></div>
+              <div class="card-value" id="val-utang">Rp 0</div>
+            </div>
+            <div class="card card-piutang">
+              <div class="card-title">Piutang <i class="fas fa-handshake"></i></div>
+              <div class="card-value" id="val-piutang">Rp 0</div>
+            </div>
+          </div>
+
+          <!-- Charts -->
+          <div class="charts-grid">
+            <div class="chart-box">
+              <h3>Pemasukan vs Pengeluaran</h3>
+              <div class="chart-container-inner">
+                <canvas id="pieChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-box">
+              <h3>Pergerakan Harian (Bulan Ini)</h3>
+              <div class="chart-container-inner">
+                <canvas id="lineChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabel Aktivitas Terbaru -->
+          <div class="table-container">
+            <div class="table-header">
+              <h3>Aktivitas Terbaru</h3>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Keterangan</th>
+                  <th>Kategori</th>
+                  <th>Nominal</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-body-dashboard">
+                <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================= VIEW: TRANSAKSI ================= -->
+        <div id="view-transaksi" style="display: none;">
+          
+          <!-- Filter Panel -->
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="table-header" style="border: none; padding: 0; margin-bottom: 15px;">
+              <h3 style="margin: 0;"><i class="fas fa-filter"></i> Filter Transaksi</h3>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+              
+              <div>
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Cari Keterangan</label>
+                <input type="text" id="filter-search" class="retro-input" placeholder="Ketik kata kunci...">
+              </div>
+
+              <div>
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Jenis Transaksi</label>
+                <select id="filter-jenis" class="retro-input">
+                  <option value="Semua">Semua Jenis</option>
+                  <option value="Pemasukan">Pemasukan</option>
+                  <option value="Pengeluaran">Pengeluaran</option>
+                  <option value="Mutasi">Mutasi</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Rentang Waktu</label>
+                <select id="filter-waktu" class="retro-input">
+                  <option value="Semua">Semua Waktu</option>
+                  <option value="Harian">Harian (Pilih Tanggal)</option>
+                  <option value="Mingguan">7 Hari Terakhir</option>
+                  <option value="Bulanan">Bulanan (Pilih Bulan)</option>
+                  <option value="Kustom">Rentang Tanggal...</option>
+                </select>
+              </div>
+
+              <div id="filter-harian-group" style="display: none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Pilih Tanggal</label>
+                <input type="date" id="filter-date-single" class="retro-input">
+              </div>
+
+              <div id="filter-bulanan-group" style="display: none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Pilih Bulan</label>
+                <input type="month" id="filter-month-single" class="retro-input">
+              </div>
+
+              <div id="filter-date-group" style="display: none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Dari Tanggal</label>
+                <input type="date" id="filter-date-start" class="retro-input">
+              </div>
+
+              <div id="filter-date-group2" style="display: none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Sampai Tanggal</label>
+                <input type="date" id="filter-date-end" class="retro-input">
+              </div>
+            </div>
+          </div>
+
+          <!-- Mini Summary for Filter -->
+          <div class="summary-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+            <div class="card card-masuk" style="padding: 15px;">
+              <div class="card-title">Pemasukan (Filter)</div>
+              <div class="card-value" id="val-filter-pemasukan" style="font-size: 1.2rem;">Rp 0</div>
+            </div>
+            <div class="card card-keluar" style="padding: 15px;">
+              <div class="card-title">Pengeluaran (Filter)</div>
+              <div class="card-value" id="val-filter-pengeluaran" style="font-size: 1.2rem;">Rp 0</div>
+            </div>
+            <div class="card card-saldo" style="padding: 15px;">
+              <div class="card-title">Selisih Bersih</div>
+              <div class="card-value" id="val-filter-selisih" style="font-size: 1.2rem;">Rp 0</div>
+            </div>
+          </div>
+
+          <!-- Tabel Transaksi Lengkap -->
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Keterangan</th>
+                  <th>Sumber Dana</th>
+                  <th>Nominal</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-body-transaksi">
+                <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
+              </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+              <button id="btn-prev-page" class="btn-action" style="background: var(--primary); color: white; padding: 5px 15px; border-radius: 4px; box-shadow: 2px 2px 0 #000;">&laquo; Prev</button>
+              <span id="page-indicator" style="font-weight: bold; color: #666;">Halaman 1 / 1</span>
+              <button id="btn-next-page" class="btn-action" style="background: var(--primary); color: white; padding: 5px 15px; border-radius: 4px; box-shadow: 2px 2px 0 #000;">Next &raquo;</button>
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ================= BOTTOM NAV MOBILE ================= -->
+  <nav class="bottom-nav">
+    <ul>
+      <li><a href="#" class="active" id="nav-dashboard-mobile"><i class="fas fa-home"></i> Beranda</a></li>
+      <li><a href="#" id="nav-transaksi-mobile"><i class="fas fa-exchange-alt"></i> Transaksi</a></li>
+      <li><a href="#" id="btn-logout-mobile" style="color:#e74c3c;"><i class="fas fa-sign-out-alt"></i> Keluar</a></li>
+    </ul>
+  </nav>
+
+  <!-- ================= MODAL CRUD ================= -->
+  <div id="crud-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Catat Transaksi</h2>
+        <button class="close-modal" id="btn-close-modal">&times;</button>
+      </div>
+      <form id="crud-form">
+        <input type="hidden" id="form-action" value="tambah">
+        <input type="hidden" id="form-id" value="">
+        
+        <div class="input-group">
+          <label>Jenis Transaksi</label>
+          <select id="form-jenis" class="retro-input" required>
+            <option value="Pengeluaran">Pengeluaran</option>
+            <option value="Pemasukan">Pemasukan</option>
+            <option value="Mutasi">Mutasi (Pindah Dana)</option>
+          </select>
+        </div>
+        
+        <div class="input-group">
+          <label>Keterangan</label>
+          <input type="text" id="form-keterangan" class="retro-input" placeholder="Makan siang..." required>
+        </div>
+        
+        <div class="input-group">
+          <label>Kategori</label>
+          <select id="form-kategori" class="retro-input" required>
+            <option value="">Pilih Kategori...</option>
+            <option value="Gaji">Gaji</option>
+            <option value="Bonus">Bonus</option>
+            <option value="Tip">Tip</option>
+            <option value="Hasil Usaha">Hasil Usaha</option>
+            <option value="Investasi">Investasi</option>
+            <option value="Makanan">Makanan</option>
+            <option value="Transportasi">Transportasi</option>
+            <option value="Hiburan">Hiburan</option>
+            <option value="Pendidikan">Pendidikan</option>
+            <option value="Belanja">Belanja</option>
+            <option value="Tagihan">Tagihan</option>
+            <option value="Cicilan">Cicilan</option>
+            <option value="Belanja Online">Belanja Online</option>
+            <option value="Asuransi">Asuransi</option>
+            <option value="Donasi">Donasi</option>
+            <option value="Lain-lain">Lain-lain</option>
+          </select>
+        </div>
+        
+        <div class="input-group">
+          <label>Sumber Dana</label>
+          <select id="form-sumber-dana" class="retro-input" required>
+            <option value="">Pilih Sumber Dana...</option>
+            <option value="Tunai">Tunai</option>
+            <option value="BCA">BCA</option>
+            <option value="Mandiri">Mandiri</option>
+            <option value="BNI">BNI</option>
+            <option value="BRI">BRI</option>
+            <option value="BSI">BSI</option>
+            <option value="OVO">OVO</option>
+            <option value="GoPay">GoPay</option>
+            <option value="DANA">DANA</option>
+            <option value="ShopeePay">ShopeePay</option>
+            <option value="Lain-lain">Lain-lain</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label>Nominal (Rp)</label>
+          <input type="text" id="form-nominal" class="retro-input" placeholder="50.000" required>
+        </div>
+        
+        <div class="input-group">
+          <label>Tag Khusus (Opsional)</label>
+          <select id="form-tag" class="retro-input">
+            <option value="">Tidak ada</option>
+            <option value="Utang">Utang (Pinjam uang)</option>
+            <option value="Piutang">Piutang (Memberi pinjaman)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-login" id="btn-save-crud">SIMPAN TRANSAKSI</button>
+        <div id="crud-error" class="error-msg"></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/dashboard.js"></script>
+</body>
+</html>
