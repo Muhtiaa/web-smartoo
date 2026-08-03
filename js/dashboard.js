@@ -218,9 +218,14 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (data.status === 'sukses') {
         // Simpan id_whatsapp (format @lid) untuk keperluan CRUD
-        if (data.id_whatsapp) {
-          localStorage.setItem('smartoo_id_wa', data.id_whatsapp);
+        let idWa = data.id_whatsapp;
+        if (!idWa && data.activities && data.activities.length > 0) {
+          idWa = data.activities[0].id_whatsapp;
         }
+        if (idWa) {
+          localStorage.setItem('smartoo_id_wa', idWa);
+        }
+        
         renderDashboard(data);
         
         // Fetch Dompet & Kategori after successful login
@@ -967,9 +972,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if(tblPemasukan) tblPemasukan.innerHTML = '';
     if(tblPengeluaran) tblPengeluaran.innerHTML = '';
     
+    let hasPemasukan = false;
+    let hasPengeluaran = false;
     let optHtml = '<option value="">Pilih Kategori...</option>';
 
     cachedKategori.forEach(kat => {
+      if (!kat.id_kategori) return; // skip empty objects from n8n
       optHtml += `<option value="${kat.nama_kategori}">${kat.nama_kategori}</option>`;
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -979,10 +987,13 @@ document.addEventListener('DOMContentLoaded', () => {
           <button class="btn-action btn-delete" onclick="hapusKategori('${kat.id_kategori}')"><i class="fas fa-trash"></i></button>
         </td>
       `;
-      if(kat.jenis === 'Pemasukan' && tblPemasukan) tblPemasukan.appendChild(tr);
-      if(kat.jenis === 'Pengeluaran' && tblPengeluaran) tblPengeluaran.appendChild(tr);
+      if(kat.jenis === 'Pemasukan' && tblPemasukan) { tblPemasukan.appendChild(tr); hasPemasukan = true; }
+      if(kat.jenis === 'Pengeluaran' && tblPengeluaran) { tblPengeluaran.appendChild(tr); hasPengeluaran = true; }
     });
 
+    if(!hasPemasukan && tblPemasukan) tblPemasukan.innerHTML = '<tr><td colspan="2" style="text-align:center;">Belum ada kategori pemasukan.</td></tr>';
+    if(!hasPengeluaran && tblPengeluaran) tblPengeluaran.innerHTML = '<tr><td colspan="2" style="text-align:center;">Belum ada kategori pengeluaran.</td></tr>';
+    
     if(formKategoriSelect) formKategoriSelect.innerHTML = optHtml;
   };
 
@@ -1072,14 +1083,31 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let optHtml = '<option value="">Pilih Sumber Dana...</option>';
     let totals = { 'Tunai': 0, 'Bank': 0, 'E-Wallet': 0 }; // We don't have exact balance from DB directly yet, just mock 0 or calculate from activities
+    let hasDompet = false;
+    let totalAllSaldo = 0;
 
     cachedDompet.forEach(dpt => {
+      if (!dpt.id_dompet) return; // skip empty objects from n8n
+      hasDompet = true;
       optHtml += `<option value="${dpt.nama_dompet}">${dpt.nama_dompet}</option>`;
       const tr = document.createElement('tr');
+      
+      // Calculate saldo
+      let saldo = 0;
+      if (window.filteredActivities) {
+        window.filteredActivities.forEach(act => {
+          if (act.sumber_dana === dpt.nama_dompet) {
+            if (act.jenis_transaksi === 'Pemasukan') saldo += parseInt(act.nominal) || 0;
+            if (act.jenis_transaksi === 'Pengeluaran') saldo -= parseInt(act.nominal) || 0;
+          }
+        });
+      }
+      totalAllSaldo += saldo;
+
       tr.innerHTML = `
         <td><strong>${dpt.nama_dompet}</strong></td>
         <td>${dpt.grup}</td>
-        <td>-</td>
+        <td>${formatRp(saldo)}</td>
         <td>
           <button class="btn-action btn-edit" onclick="editDompet('${dpt.id_dompet}')"><i class="fas fa-edit"></i></button>
           <button class="btn-action btn-delete" onclick="hapusDompet('${dpt.id_dompet}')"><i class="fas fa-trash"></i></button>
@@ -1087,6 +1115,10 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       if(tblDompet) tblDompet.appendChild(tr);
     });
+
+    if(!hasDompet && tblDompet) {
+      tblDompet.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada dompet/sumber dana.</td></tr>';
+    }
 
     ['Tunai', 'Bank', 'E-Wallet'].forEach(grp => {
        const d = cachedDompet.filter(x => x.grup === grp).length;
