@@ -612,8 +612,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     let nama = data.nama_pengguna || data.nama;
-    if (!nama && activities.length > 0) {
-      nama = activities[0].nama_pengguna || activities[0].nama || activities[0].pengguna;
+    if ((!nama || nama === "Pengguna Web") && activities.length > 0) {
+      const validActivity = activities.find(a => a.nama_pengguna && a.nama_pengguna !== "Pengguna Web" && a.nama_pengguna !== "-");
+      if (validActivity) {
+        nama = validActivity.nama_pengguna;
+      }
     }
     nama = nama || "Pengguna Web";
     localStorage.setItem('smartoo_nama', nama);
@@ -1138,9 +1141,6 @@ document.addEventListener('DOMContentLoaded', () => {
          </div>
        `;
     });
-
-    if(selSumberDana) selSumberDana.innerHTML = optHtml;
-    if(selTujuanDana) selTujuanDana.innerHTML = optHtml;
   };
 
   const renderTransaksiTable = () => {
