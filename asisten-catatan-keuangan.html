@@ -444,7 +444,7 @@
             <li class="">Rekap Laporan Harian/Bulanan</li>
             <li class="">SMART O² Aktif 24/7 Tiada Henti</li>
           </ul>
-          <a href="https://wa.me/6285817266784" target="_blank" class="btn btn-outline btn-pricing" style="width:100%; text-align:center;">Beli Sekarang</a>
+          <a href="javascript:void(0)" onclick="checkout(this, 'BASIC', 17900)" class="btn btn-outline btn-pricing" style="width:100%; text-align:center;">Beli Sekarang</a>
         </div>
         <!-- PRO -->
         <div class="brutal-card fade-in visible" style="background: var(--primary);">
@@ -456,7 +456,7 @@
             <li class="">Catat via Gambar &amp; File Dokumen</li>
             <li class="">Akses Eksklusif Web Dashboard</li>
           </ul>
-          <a href="https://wa.me/6285817266784" target="_blank" class="btn btn-primary btn-pricing" style="width:100%; text-align:center; background:var(--text-dark); color:white;">Beli Sekarang</a>
+          <a href="javascript:void(0)" onclick="checkout(this, 'PRO', 28900)" class="btn btn-primary btn-pricing" style="width:100%; text-align:center; background:var(--text-dark); color:white;">Beli Sekarang</a>
         </div>
         <!-- PREMIUM -->
         <div class="brutal-card fade-in visible">
@@ -468,7 +468,7 @@
             <li class="">Pengingat Target Budgeting</li>
             <li class="">*Voice Reply* Langsung dari Bot</li>
           </ul>
-          <a href="https://wa.me/6285817266784" target="_blank" class="btn btn-outline btn-pricing" style="width:100%; text-align:center;">Beli Sekarang</a>
+          <a href="javascript:void(0)" onclick="checkout(this, 'PREMIUM', 34900)" class="btn btn-outline btn-pricing" style="width:100%; text-align:center;">Beli Sekarang</a>
         </div>
       </div>
     </div>
@@ -556,4 +556,54 @@
   <script src="js/main.js"></script>
 
 
+  <script>
+    async function checkout(buttonElement, paket, harga) {
+      // Simpan teks asli tombol
+      const originalText = buttonElement.innerHTML;
+      
+      // Ubah tombol jadi status loading
+      buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Memproses...';
+      buttonElement.style.pointerEvents = 'none'; // cegah double click
+      buttonElement.style.opacity = '0.7';
+
+      try {
+        // Panggil Webhook n8n (Ubah URL ini sesuai URL webhook n8n produksi Anda!)
+        const n8nWebhookUrl = 'https://n8n.smart-oo.me/webhook/ipaymu-checkout';
+        
+        const response = await fetch(n8nWebhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            paket: paket,
+            harga: harga
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Gagal menghubungi server pembayaran.');
+        }
+
+        const data = await response.json();
+        
+        // iPaymu mengembalikan data di dalam objek Data
+        if (data && data.Data && data.Data.Url) {
+          // Arahkan pembeli ke halaman kasir iPaymu
+          window.location.href = data.Data.Url;
+        } else {
+          throw new Error('Respon dari server pembayaran tidak valid.');
+        }
+
+      } catch (error) {
+        console.error('Checkout error:', error);
+        alert('Maaf, sistem pembayaran sedang sibuk. Silakan coba beberapa saat lagi atau hubungi Admin.');
+        
+        // Kembalikan tombol seperti semula jika gagal
+        buttonElement.innerHTML = originalText;
+        buttonElement.style.pointerEvents = 'auto';
+        buttonElement.style.opacity = '1';
+      }
+    }
+  </script>
 </body></html>
