@@ -42,6 +42,46 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
   100% { transform: rotate(360deg); }
 }
 
+/* NEW NEO-BRUTALISM ANIMATIONS */
+@keyframes floatingBox {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes fadeInBackdrop {
+  from { background-color: rgba(0,0,0,0); }
+  to { background-color: rgba(0,0,0,0.5); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideUpBottom {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fadeView {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseText {
+  0%, 100% { opacity: 0.5; color: inherit; }
+  50% { opacity: 1; color: var(--accent); }
+}
+
+.view-active {
+  animation: fadeView 0.3s ease-out forwards;
+}
+
+.loading-text {
+  animation: pulseText 1.5s infinite;
+}
+
     body {
       background-color: var(--bg);
       color: var(--text);
@@ -62,21 +102,18 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
       z-index: 9999;
     }
     .login-box {
-      /* Glassmorphism effect */
       background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
       padding: 40px;
+      border-radius: 12px;
       width: 90%;
       max-width: 400px;
-      text-align: center;
-      border-radius: 16px;
-      color: #ffffff;
-  z-index: 1;
-  animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 2px solid var(--accent);
+      position: relative;
+      z-index: 1;
+      animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards, floatingBox 4s ease-in-out infinite;
+    }
 .login-header {
   text-align: center;
     }
@@ -129,17 +166,18 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
       box-shadow: var(--shadow);
       font-size: 1rem;
       font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.btn-login:hover {
-  background: #d68910;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 15px rgba(230, 126, 34, 0.4);
-}
-.btn-login:active {
-  transform: translateY(1px);
-}
+      cursor: pointer;
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    }
+    .btn-login:hover, .header-actions button:hover {
+      background: #d68910;
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #000;
+    }
+    .btn-login:active, .header-actions button:active {
+      transform: translate(4px, 4px);
+      box-shadow: 0 0 0 #000 !important;
+    }
 .login-footer {
     }
 
@@ -259,11 +297,6 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
       border-radius: 4px;
     }
 
-    .header-actions button:active {
-      transform: translate(2px, 2px);
-      box-shadow: 0 0 0 #000;
-    }
-
     /* SUMMARY CARDS */
     .summary-grid {
       display: grid;
@@ -280,12 +313,16 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
       box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
     }
 
     .card:hover {
-      transform: translateY(-5px);
+      transform: translate(-2px, -2px);
       box-shadow: 8px 8px 0px #000;
+    }
+    .card:active {
+      transform: translate(4px, 4px);
+      box-shadow: 0 0 0 #000 !important;
     }
 
     .card-title {
@@ -386,7 +423,6 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
 table tbody tr:hover {
   background-color: rgba(230, 126, 34, 0.05);
 }
-.badge {   }
 
     th {
       font-weight: bold;
@@ -485,25 +521,46 @@ table tbody tr:hover {
 
     /* MODAL CRUD */
     .modal {
-      display: none;
+      display: none; /* Default hidden */
       position: fixed;
-      top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.5);
-      z-index: 10000;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0);
       justify-content: center;
       align-items: center;
     }
-    
+    .modal.show {
+      display: flex;
+      animation: fadeInBackdrop 0.3s forwards;
+    }
+    #modal-lainnya.show {
+      align-items: flex-end;
+    }
+
     .modal-content {
-      background: #fff;
+      background-color: var(--bg);
+      padding: 20px;
       border: var(--border);
-      box-shadow: 8px 8px 0px #000;
-      padding: 30px;
       width: 90%;
       max-width: 500px;
       border-radius: 8px;
-      max-height: 90vh;
-      overflow-y: auto;
+      box-shadow: var(--shadow);
+      position: relative;
+      transform: scale(0.9);
+      opacity: 0;
+    }
+    .modal.show .modal-content {
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    #modal-lainnya.show .modal-content {
+      animation: slideUpBottom 0.3s ease-out forwards;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      transform: scale(1);
+      opacity: 1;
     }
 
     .modal-header {
@@ -620,7 +677,7 @@ table tbody tr:hover {
       <!-- SIDEBAR DESKTOP -->
       <nav class="sidebar">
         <div class="sidebar-brand">
-          <img src="../assets/logo.png" alt="Logo" onerror="this.style.display='none'">
+          <img src="../assets/logo.png" alt="Logo" onerror="this.classList.remove('show')">
           SMART O²
         </div>
         <ul class="nav-links">
@@ -628,8 +685,8 @@ table tbody tr:hover {
           <li><a href="#" id="nav-transaksi"><i class="fas fa-exchange-alt"></i> Transaksi</a></li>
           <li><a href="#" id="nav-dompet-sidebar"><i class="fas fa-wallet"></i> Dompet</a></li>
           <li><a href="#" id="nav-kategori-sidebar"><i class="fas fa-tags"></i> Kategori</a></li>
-          <li><a href="#" onclick="document.getElementById('modal-export').style.display='flex'; return false;"><i class="fas fa-file-export"></i> Export</a></li>
-          <li><a href="#" onclick="document.getElementById('settings-modal').style.display='flex'; return false;"><i class="fas fa-cog"></i> Pengaturan</a></li>
+          <li><a href="#" onclick="document.getElementById('modal-export').classList.add('show'); return false;"><i class="fas fa-file-export"></i> Export</a></li>
+          <li><a href="#" onclick="document.getElementById('settings-modal').classList.add('show'); return false;"><i class="fas fa-cog"></i> Pengaturan</a></li>
         </ul>
         <div class="sidebar-footer">
           <a href="#" id="btn-logout-sidebar" style="color:#e74c3c; text-decoration:none; display:flex; align-items:center; gap:10px;"><i class="fas fa-sign-out-alt"></i> Keluar</a>
@@ -834,7 +891,7 @@ table tbody tr:hover {
                 </tr>
               </thead>
               <tbody id="table-body-dompet">
-                <tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>
+                <td colspan="4" style="text-align:center;" class="loading-text">Memuat data...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1124,7 +1181,7 @@ table tbody tr:hover {
     <div class="modal-content" style="max-width: 400px;">
       <div class="modal-header">
         <h2 id="settings-modal-title"><i class="fas fa-cog"></i> Pengaturan</h2>
-        <span class="close-modal" id="close-settings-modal" onclick="document.getElementById('settings-modal').style.display='none'">&times;</span>
+        <span class="close-modal" id="close-settings-modal" onclick="document.getElementById('settings-modal').classList.remove('show')">&times;</span>
       </div>
       <form id="settings-form" style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
         <div class="input-group">
@@ -1155,3 +1212,4 @@ table tbody tr:hover {
   <script src="../js/dashboard.js"></script>
 </body>
 </html>
+
