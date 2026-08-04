@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const navDompetMobile = document.getElementById('nav-dompet-mobile');
   const navLainnyaMobile = document.getElementById('nav-lainnya-mobile');
   const navKategoriMobile = document.getElementById('nav-kategori-mobile');
+  const navExportMobile = document.getElementById('nav-export-mobile');
   const modalLainnya = document.getElementById('modal-lainnya');
   const btnCloseLainnya = document.getElementById('btn-close-lainnya');
 
@@ -206,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     btnLogin.textContent = "Memverifikasi...";
+    btnLogin.disabled = true;
     loginError.style.display = "none";
 
     // Simpan ke localStorage sementara (akan dihapus kalau gagal)
@@ -219,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dashboardSection.style.display = "block";
     } else {
       btnLogin.textContent = "MASUK DASHBOARD";
+      btnLogin.disabled = false;
       localStorage.removeItem('smartoo_phone');
       localStorage.removeItem('smartoo_otp');
     }
@@ -268,8 +271,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // Extract unique from activities to merge with defaults
-    if (window.filteredActivities && window.filteredActivities.length > 0) {
-      window.filteredActivities.forEach(act => {
+    if (cachedActivities && cachedActivities.length > 0) {
+      cachedActivities.forEach(act => {
         if (act.kategori && act.kategori !== "-") {
           let jenis = act.jenis_transaksi === "Pemasukan" ? "Pemasukan" : "Pengeluaran";
           if (!defaultsKategori.some(k => k.nama.toLowerCase() === act.kategori.toLowerCase())) {
@@ -287,52 +290,77 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    if (isKategoriEmpty) {
-      console.log("Inisialisasi kategori...");
-      for(let k of defaultsKategori) {
+    let hasAddedKategori = false;
+    for(let k of defaultsKategori) {
+      if (!cachedKategori.some(c => c.nama_kategori.toLowerCase() === k.nama.toLowerCase() && c.jenis === k.jenis)) {
         try {
+          console.log("Menambahkan kategori default yang hilang: " + k.nama);
           await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'tambah', id_whatsapp: idWa, nama_kategori: k.nama, jenis: k.jenis })
           });
+          hasAddedKategori = true;
         } catch(e) {}
       }
+    }
+    if (hasAddedKategori) {
       await window.fetchKategori(); // refresh
     }
 
-    if (isDompetEmpty) {
-      console.log("Inisialisasi dompet...");
-      for(let d of defaultsDompet) {
+    let hasAddedDompet = false;
+    for(let d of defaultsDompet) {
+      if (!cachedDompet.some(c => c.nama_dompet.toLowerCase() === d.nama.toLowerCase())) {
         try {
+          console.log("Menambahkan dompet default yang hilang: " + d.nama);
           await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'tambah', id_whatsapp: idWa, nama_dompet: d.nama, grup: d.grup })
           });
+          hasAddedDompet = true;
         } catch(e) {}
       }
+    }
+    if (hasAddedDompet) {
       await window.fetchDompet(); // refresh
     }
 
-    // --- AUTO CLEANUP DUPLICATES ---
+    // --- AUTO CLEANUP DUPLICATES & WRONG CATEGORIES ---
     // If there are duplicate names in cachedKategori or cachedDompet, keep the first one and delete the rest.
+    // Also delete the incorrect categories from the previous buggy script.
     let kategoriNames = new Set();
-    let hasDuplicateKategori = false;
+    let hasDeletedKategori = false;
+    
+    const badCategories = [
+      { nama: "minuman", jenis: "Pengeluaran" },
+      { nama: "belanja bulanan", jenis: "Pengeluaran" },
+      { nama: "bisnis", jenis: "Pemasukan" },
+      { nama: "hutang", jenis: "Pemasukan" },
+      { nama: "piutang", jenis: "Pemasukan" },
+      { nama: "listrik", jenis: "Pengeluaran" },
+      { nama: "internet", jenis: "Pengeluaran" },
+      { nama: "kesehatan", jenis: "Pengeluaran" }
+    ];
+
     for (let k of cachedKategori) {
       if (!k.nama_kategori) continue;
-      if (kategoriNames.has(k.nama_kategori.toLowerCase())) {
-        // Duplicate found! Delete it.
+      
+      let isBad = badCategories.some(b => b.nama === k.nama_kategori.toLowerCase() && b.jenis === k.jenis);
+      let isDuplicate = kategoriNames.has(k.nama_kategori.toLowerCase());
+      
+      if (isBad || isDuplicate) {
+        // Duplicate or bad found! Delete it.
         try {
           await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'hapus', id_whatsapp: idWa, id_kategori: k.id_kategori })
           });
-          hasDuplicateKategori = true;
+          hasDeletedKategori = true;
         } catch(e) {}
       } else {
         kategoriNames.add(k.nama_kategori.toLowerCase());
       }
     }
-    if (hasDuplicateKategori) await window.fetchKategori();
+    if (hasDeletedKategori) await window.fetchKategori();
 
     let dompetNames = new Set();
     let hasDuplicateDompet = false;
@@ -529,7 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ket: act.keterangan,
             sumber: act.sumber_dana,
             tujuan: act.tujuan_dana || '-',
-            nom: parseInt(act.nominal) || 0,
+            nom: parseInt(String(act.nominal).replace(/[^0-9-]/g, '')) || 0,
             tag: act.tag_status || '-'
           });
         });
@@ -555,13 +583,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const renderDashboard = (data) => {
-    const metrics = data.metrics || { income: 0, expense: 0, balance: 0, debt: 0, piutang: 0 };
     const activities = data.activities || [];
     cachedActivities = activities;
+
+    let fallbackIncome = 0;
+    let fallbackExpense = 0;
+    let fallbackDebt = 0;
+    let fallbackPiutang = 0;
     
-    let nama = data.nama_pengguna;
+    if (activities) {
+      activities.forEach(act => {
+        let n = parseInt(String(act.nominal).replace(/[^0-9-]/g, '')) || 0;
+        if (act.jenis_transaksi === 'Pemasukan') {
+          if (act.kategori && act.kategori.toLowerCase() === 'utang') fallbackDebt += n;
+          fallbackIncome += n;
+        } else if (act.jenis_transaksi === 'Pengeluaran') {
+          if (act.kategori && act.kategori.toLowerCase() === 'piutang') fallbackPiutang += n;
+          fallbackExpense += n;
+        }
+      });
+    }
+    const fallbackBalance = fallbackIncome - fallbackExpense;
+    
+    // Use data.metrics if available and non-zero, otherwise fallback to manual calculation
+    let metrics = data.metrics;
+    if (!metrics || (metrics.income === 0 && fallbackIncome > 0)) {
+      metrics = { income: fallbackIncome, expense: fallbackExpense, balance: fallbackBalance, debt: fallbackDebt, piutang: fallbackPiutang };
+    }
+    
+    let nama = data.nama_pengguna || data.nama;
     if (!nama && activities.length > 0) {
-      nama = activities[0].nama_pengguna;
+      nama = activities[0].nama_pengguna || activities[0].nama || activities[0].pengguna;
     }
     nama = nama || "Pengguna Web";
     localStorage.setItem('smartoo_nama', nama);
@@ -744,6 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     btnSaveCrud.textContent = "Menyimpan...";
+    btnSaveCrud.disabled = true;
     try {
       const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-crud', {
         method: 'POST',
@@ -770,6 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast("Kesalahan koneksi", "error");
     } finally {
       btnSaveCrud.textContent = "SIMPAN TRANSAKSI";
+      btnSaveCrud.disabled = false;
     }
   });
 
@@ -786,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-jenis').value = act.jenis_transaksi;
     document.getElementById('form-keterangan').value = act.keterangan;
     document.getElementById('form-kategori').value = act.kategori;
-    document.getElementById('form-nominal').value = parseInt(act.nominal, 10).toLocaleString('id-ID').replace(/,/g, '.');
+    document.getElementById('form-nominal').value = parseInt(String(act.nominal).replace(/[^0-9-]/g, ''), 10).toLocaleString('id-ID').replace(/,/g, '.');
     
     if (formTanggal) formTanggal.value = act.tanggal || '';
     if (formWaktu) formWaktu.value = act.waktu ? act.waktu.substring(0,5) : '';
@@ -899,6 +953,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if(modalLainnya) modalLainnya.style.display = 'none'; 
   });
   
+  if (navExportMobile) navExportMobile.addEventListener('click', (e) => {
+    e.preventDefault();
+    if(modalLainnya) modalLainnya.style.display = 'none'; 
+    const modalExport = document.getElementById('modal-export');
+    if (modalExport) modalExport.style.display = 'flex';
+  });
+  
   if (navLainnyaMobile) navLainnyaMobile.addEventListener('click', (e) => {
     e.preventDefault();
     if(modalLainnya) modalLainnya.style.display = 'flex';
@@ -993,6 +1054,93 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentPage = 1;
     renderTransaksiTable();
+  };
+
+  const renderDompet = () => {
+    const tblDompet = document.getElementById('table-body-dompet');
+    const cardsDompet = document.getElementById('dompet-cards');
+    const selSumberDana = document.getElementById('form-sumber-dana');
+    const selTujuanDana = document.getElementById('form-tujuan-dana');
+
+    if(tblDompet) tblDompet.innerHTML = '';
+    if(cardsDompet) cardsDompet.innerHTML = '';
+
+    // DYNAMIC SYNC: Ambil dompet dari transaksi yang mungkin belum ada di cachedDompet
+    if (cachedActivities) {
+      cachedActivities.forEach(act => {
+        if (act.sumber_dana && act.sumber_dana !== '-' && act.sumber_dana.trim() !== '') {
+          if (!cachedDompet.some(d => d.nama_dompet && d.nama_dompet.toLowerCase() === act.sumber_dana.toLowerCase())) {
+            let grup = 'Bank';
+            let lower = act.sumber_dana.toLowerCase();
+            if (lower.includes('tunai') || lower.includes('cash')) grup = 'Tunai';
+            else if (['ovo', 'gopay', 'dana', 'shopeepay', 'linkaja', 'spay', 'shopee'].some(ew => lower.includes(ew))) grup = 'E-Wallet';
+            cachedDompet.push({
+              id_dompet: 'virtual_' + Date.now() + Math.random(),
+              nama_dompet: act.sumber_dana,
+              grup: grup
+            });
+          }
+        }
+      });
+    }
+
+    let optHtml = '<option value="">Pilih Sumber Dana...</option>';
+    let totals = { 'Tunai': 0, 'Bank': 0, 'E-Wallet': 0 };
+    let hasDompet = false;
+    let totalAllSaldo = 0;
+
+    cachedDompet.forEach(dpt => {
+      if (!dpt.nama_dompet) return;
+
+      let saldo = 0;
+      if (cachedActivities) {
+        cachedActivities.forEach(act => {
+          let nom = parseInt(String(act.nominal).replace(/[^0-9-]/g, '')) || 0;
+          if (act.sumber_dana === dpt.nama_dompet && act.jenis_transaksi === 'Pemasukan') {
+            saldo += nom;
+          } else if (act.sumber_dana === dpt.nama_dompet && act.jenis_transaksi === 'Pengeluaran') {
+            saldo -= nom;
+          } else if (act.jenis_transaksi === 'Mutasi') {
+            if (act.sumber_dana === dpt.nama_dompet) saldo -= nom;
+            if (act.tujuan_dana === dpt.nama_dompet) saldo += nom;
+          }
+        });
+      }
+
+      totalAllSaldo += saldo;
+      if (totals[dpt.grup] !== undefined) totals[dpt.grup] += 1;
+      hasDompet = true;
+      optHtml += `<option value="${dpt.nama_dompet}">${dpt.nama_dompet}</option>`;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${dpt.nama_dompet}</td>
+        <td>${dpt.grup}</td>
+        <td>${formatRp(saldo)}</td>
+        <td class="action-buttons">
+          <button class="btn-action btn-edit" onclick="editDompet('${dpt.id_dompet}', '${dpt.grup}', '${dpt.nama_dompet}')"><i class="fas fa-edit"></i></button>
+          <button class="btn-action btn-delete" onclick="hapusDompet('${dpt.id_dompet}')"><i class="fas fa-trash"></i></button>
+        </td>
+      `;
+      if(tblDompet) tblDompet.appendChild(tr);
+    });
+
+    if(!hasDompet && tblDompet) {
+      tblDompet.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada dompet/sumber dana.</td></tr>';
+    }
+
+    ['Tunai', 'Bank', 'E-Wallet'].forEach(grp => {
+       const d = totals[grp];
+       if (cardsDompet) cardsDompet.innerHTML += `
+         <div class="card" style="padding:15px; border-left:4px solid var(--primary);">
+           <div class="card-title">${grp}</div>
+           <div class="card-value" style="font-size:1.2rem;">${d} Akun</div>
+         </div>
+       `;
+    });
+
+    if(selSumberDana) selSumberDana.innerHTML = optHtml;
+    if(selTujuanDana) selTujuanDana.innerHTML = optHtml;
   };
 
   const renderTransaksiTable = () => {
@@ -1138,7 +1286,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if(data.status === 'sukses' && data.data) {
-        cachedKategori = data.data;
+        cachedKategori = Array.isArray(data.data) ? data.data : (Object.keys(data.data).length === 0 ? [] : [data.data]);
         renderKategori();
         return true;
       }
@@ -1220,6 +1368,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const btnSave = document.getElementById('btn-save-kategori');
       btnSave.textContent = 'Menyimpan...';
+      btnSave.disabled = true;
       try {
         await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
           method: 'POST',
@@ -1233,6 +1382,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast("Gagal menyimpan kategori", "error");
       } finally {
         btnSave.textContent = 'SIMPAN KATEGORI';
+        btnSave.disabled = false;
       }
     });
   }
@@ -1250,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if(data.status === 'sukses' && data.data) {
-        cachedDompet = data.data;
+        cachedDompet = Array.isArray(data.data) ? data.data : (Object.keys(data.data).length === 0 ? [] : [data.data]);
         renderDompet();
         return true;
       }
@@ -1260,74 +1410,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
   };
 
-  const renderDompet = () => {
-    const tblDompet = document.getElementById('table-body-dompet');
-    const cardsDompet = document.getElementById('dompet-cards');
-    const selSumberDana = document.getElementById('form-sumber-dana');
-    const selTujuanDana = document.getElementById('form-tujuan-dana');
-    
-    if(tblDompet) tblDompet.innerHTML = '';
-    if(cardsDompet) cardsDompet.innerHTML = '';
-    
-    let optHtml = '<option value="">Pilih Sumber Dana...</option>';
-    let totals = { 'Tunai': 0, 'Bank': 0, 'E-Wallet': 0 }; // We don't have exact balance from DB directly yet, just mock 0 or calculate from activities
-    let hasDompet = false;
-    let totalAllSaldo = 0;
-
-    cachedDompet.forEach(dpt => {
-      if (!dpt.id_dompet) return; // skip empty objects from n8n
-      
-      // Calculate saldo
-      let saldo = 0;
-      if (window.cachedActivities) {
-        window.cachedActivities.forEach(act => {
-          if (act.sumber_dana === dpt.nama_dompet && act.jenis_transaksi === 'Pemasukan') {
-            saldo += parseInt(act.nominal) || 0;
-          } else if (act.sumber_dana === dpt.nama_dompet && act.jenis_transaksi === 'Pengeluaran') {
-            saldo -= parseInt(act.nominal) || 0;
-          } else if (act.jenis_transaksi === 'Mutasi') {
-            if (act.sumber_dana === dpt.nama_dompet) saldo -= parseInt(act.nominal) || 0;
-            if (act.tujuan_dana === dpt.nama_dompet) saldo += parseInt(act.nominal) || 0;
-          }
-        });
-      }
-
-      totalAllSaldo += saldo;
-      if (totals[dpt.grup] !== undefined) totals[dpt.grup] += 1;
-      hasDompet = true;
-      optHtml += `<option value="${dpt.nama_dompet}">${dpt.nama_dompet}</option>`;
-      
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${dpt.nama_dompet}</td>
-        <td>${dpt.grup}</td>
-        <td>${formatRp(saldo)}</td>
-        <td class="action-buttons">
-          <button class="btn-action btn-edit" onclick="editDompet('${dpt.id_dompet}', '${dpt.grup}', '${dpt.nama_dompet}')"><i class="fas fa-edit"></i></button>
-          <button class="btn-action btn-delete" onclick="hapusDompet('${dpt.id_dompet}')"><i class="fas fa-trash"></i></button>
-        </td>
-      `;
-      if(tblDompet) tblDompet.appendChild(tr);
-    });
-
-    if(!hasDompet && tblDompet) {
-      tblDompet.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada dompet/sumber dana.</td></tr>';
-    }
-
-    ['Tunai', 'Bank', 'E-Wallet'].forEach(grp => {
-       const d = cachedDompet.filter(x => x.grup === grp).length;
-       cardsDompet.innerHTML += `
-         <div class="card" style="padding:15px; border-left:4px solid var(--primary);">
-           <div class="card-title">${grp}</div>
-           <div class="card-value" style="font-size:1.2rem;">${d} Akun</div>
-         </div>
-       `;
-    });
-
-    if(selSumberDana) selSumberDana.innerHTML = optHtml;
-    if(selTujuanDana) selTujuanDana.innerHTML = optHtml;
-  };
-
+  
   window.editDompet = (id) => {
     const dpt = cachedDompet.find(d => d.id_dompet === id);
     if(!dpt) return;
@@ -1367,6 +1450,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const btnSave = document.getElementById('btn-save-dompet');
       btnSave.textContent = 'Menyimpan...';
+      btnSave.disabled = true;
       try {
         await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
           method: 'POST',
@@ -1380,6 +1464,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast("Gagal menyimpan dompet", "error");
       } finally {
         btnSave.textContent = 'SIMPAN DOMPET';
+        btnSave.disabled = false;
       }
     });
   }
