@@ -234,21 +234,38 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!idWa) return;
 
     let defaultsKategori = [
-      { nama: "Makanan", jenis: "Pengeluaran" },
-      { nama: "Minuman", jenis: "Pengeluaran" },
-      { nama: "Transportasi", jenis: "Pengeluaran" },
-      { nama: "Belanja Bulanan", jenis: "Pengeluaran" },
       { nama: "Gaji", jenis: "Pemasukan" },
-      { nama: "Bisnis", jenis: "Pemasukan" },
-      { nama: "Hutang", jenis: "Pemasukan" },
-      { nama: "Piutang", jenis: "Pemasukan" },
+      { nama: "Bonus", jenis: "Pemasukan" },
+      { nama: "Tip", jenis: "Pemasukan" },
+      { nama: "Hasil Usaha", jenis: "Pemasukan" },
+      { nama: "Investasi", jenis: "Pemasukan" },
+      { nama: "Utang", jenis: "Pemasukan" },
+      { nama: "Makanan", jenis: "Pengeluaran" },
+      { nama: "Transportasi", jenis: "Pengeluaran" },
       { nama: "Hiburan", jenis: "Pengeluaran" },
-      { nama: "Listrik", jenis: "Pengeluaran" },
-      { nama: "Internet", jenis: "Pengeluaran" },
-      { nama: "Kesehatan", jenis: "Pengeluaran" }
+      { nama: "Pendidikan", jenis: "Pengeluaran" },
+      { nama: "Belanja", jenis: "Pengeluaran" },
+      { nama: "Tagihan", jenis: "Pengeluaran" },
+      { nama: "Cicilan", jenis: "Pengeluaran" },
+      { nama: "Belanja Online", jenis: "Pengeluaran" },
+      { nama: "Asuransi", jenis: "Pengeluaran" },
+      { nama: "Donasi", jenis: "Pengeluaran" },
+      { nama: "Lain-lain", jenis: "Pengeluaran" },
+      { nama: "Piutang", jenis: "Pengeluaran" }
     ];
 
-    let defaultsDompet = [];
+    let defaultsDompet = [
+      { nama: "Tunai", grup: "Tunai" },
+      { nama: "BCA", grup: "Bank" },
+      { nama: "Mandiri", grup: "Bank" },
+      { nama: "BNI", grup: "Bank" },
+      { nama: "BRI", grup: "Bank" },
+      { nama: "BSI", grup: "Bank" },
+      { nama: "OVO", grup: "E-Wallet" },
+      { nama: "GoPay", grup: "E-Wallet" },
+      { nama: "DANA", grup: "E-Wallet" },
+      { nama: "ShopeePay", grup: "E-Wallet" }
+    ];
 
     // Extract unique from activities to merge with defaults
     if (window.filteredActivities && window.filteredActivities.length > 0) {
@@ -1259,28 +1276,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cachedDompet.forEach(dpt => {
       if (!dpt.id_dompet) return; // skip empty objects from n8n
-      hasDompet = true;
-      optHtml += `<option value="${dpt.nama_dompet}">${dpt.nama_dompet}</option>`;
-      const tr = document.createElement('tr');
       
       // Calculate saldo
       let saldo = 0;
-      if (window.filteredActivities) {
-        window.filteredActivities.forEach(act => {
-          if (act.sumber_dana === dpt.nama_dompet) {
-            if (act.jenis_transaksi === 'Pemasukan') saldo += parseInt(act.nominal) || 0;
-            if (act.jenis_transaksi === 'Pengeluaran') saldo -= parseInt(act.nominal) || 0;
+      if (window.cachedActivities) {
+        window.cachedActivities.forEach(act => {
+          if (act.sumber_dana === dpt.nama_dompet && act.jenis_transaksi === 'Pemasukan') {
+            saldo += parseInt(act.nominal) || 0;
+          } else if (act.sumber_dana === dpt.nama_dompet && act.jenis_transaksi === 'Pengeluaran') {
+            saldo -= parseInt(act.nominal) || 0;
+          } else if (act.jenis_transaksi === 'Mutasi') {
+            if (act.sumber_dana === dpt.nama_dompet) saldo -= parseInt(act.nominal) || 0;
+            if (act.tujuan_dana === dpt.nama_dompet) saldo += parseInt(act.nominal) || 0;
           }
         });
       }
-      totalAllSaldo += saldo;
 
+      totalAllSaldo += saldo;
+      if (totals[dpt.grup] !== undefined) totals[dpt.grup] += 1;
+      hasDompet = true;
+      optHtml += `<option value="${dpt.nama_dompet}">${dpt.nama_dompet}</option>`;
+      
+      const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><strong>${dpt.nama_dompet}</strong></td>
+        <td>${dpt.nama_dompet}</td>
         <td>${dpt.grup}</td>
         <td>${formatRp(saldo)}</td>
-        <td>
-          <button class="btn-action btn-edit" onclick="editDompet('${dpt.id_dompet}')"><i class="fas fa-edit"></i></button>
+        <td class="action-buttons">
+          <button class="btn-action btn-edit" onclick="editDompet('${dpt.id_dompet}', '${dpt.grup}', '${dpt.nama_dompet}')"><i class="fas fa-edit"></i></button>
           <button class="btn-action btn-delete" onclick="hapusDompet('${dpt.id_dompet}')"><i class="fas fa-trash"></i></button>
         </td>
       `;
