@@ -248,16 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { nama: "Kesehatan", jenis: "Pengeluaran" }
     ];
 
-    let defaultsDompet = [
-      { nama: "Tunai", grup: "Tunai" },
-      { nama: "BCA", grup: "Bank" },
-      { nama: "Mandiri", grup: "Bank" },
-      { nama: "BRI", grup: "Bank" },
-      { nama: "OVO", grup: "E-Wallet" },
-      { nama: "GoPay", grup: "E-Wallet" },
-      { nama: "Dana", grup: "E-Wallet" },
-      { nama: "ShopeePay", grup: "E-Wallet" }
-    ];
+    let defaultsDompet = [];
 
     // Extract unique from activities to merge with defaults
     if (window.filteredActivities && window.filteredActivities.length > 0) {
@@ -272,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!defaultsDompet.some(d => d.nama.toLowerCase() === act.sumber_dana.toLowerCase())) {
             let grup = "Bank";
             if (act.sumber_dana.toLowerCase().includes('tunai') || act.sumber_dana.toLowerCase().includes('cash')) grup = "Tunai";
-            else if (['ovo', 'gopay', 'dana', 'shopeepay', 'linkaja'].some(ew => act.sumber_dana.toLowerCase().includes(ew))) grup = "E-Wallet";
+            else if (['ovo', 'gopay', 'dana', 'shopeepay', 'linkaja', 'spay', 'shopee'].some(ew => act.sumber_dana.toLowerCase().includes(ew))) grup = "E-Wallet";
             defaultsDompet.push({ nama: act.sumber_dana, grup: grup });
           }
         }
@@ -304,6 +295,45 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       await window.fetchDompet(); // refresh
     }
+
+    // --- AUTO CLEANUP DUPLICATES ---
+    // If there are duplicate names in cachedKategori or cachedDompet, keep the first one and delete the rest.
+    let kategoriNames = new Set();
+    let hasDuplicateKategori = false;
+    for (let k of cachedKategori) {
+      if (!k.nama_kategori) continue;
+      if (kategoriNames.has(k.nama_kategori.toLowerCase())) {
+        // Duplicate found! Delete it.
+        try {
+          await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'hapus', id_whatsapp: idWa, id_kategori: k.id_kategori })
+          });
+          hasDuplicateKategori = true;
+        } catch(e) {}
+      } else {
+        kategoriNames.add(k.nama_kategori.toLowerCase());
+      }
+    }
+    if (hasDuplicateKategori) await window.fetchKategori();
+
+    let dompetNames = new Set();
+    let hasDuplicateDompet = false;
+    for (let d of cachedDompet) {
+      if (!d.nama_dompet) continue;
+      if (dompetNames.has(d.nama_dompet.toLowerCase())) {
+        try {
+          await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'hapus', id_whatsapp: idWa, id_dompet: d.id_dompet })
+          });
+          hasDuplicateDompet = true;
+        } catch(e) {}
+      } else {
+        dompetNames.add(d.nama_dompet.toLowerCase());
+      }
+    }
+    if (hasDuplicateDompet) await window.fetchDompet();
   };
 
   const fetchDashboardData = async (phone, otp) => {
@@ -511,7 +541,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const metrics = data.metrics || { income: 0, expense: 0, balance: 0, debt: 0, piutang: 0 };
     const activities = data.activities || [];
     cachedActivities = activities;
-    const nama = data.nama_pengguna || "Pengguna Web";
+    
+    let nama = data.nama_pengguna;
+    if (!nama && activities.length > 0) {
+      nama = activities[0].nama_pengguna;
+    }
+    nama = nama || "Pengguna Web";
     localStorage.setItem('smartoo_nama', nama);
 
     userGreeting.textContent = `Halo, ${nama}`;
