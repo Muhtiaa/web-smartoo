@@ -25,12 +25,22 @@
       --shadow: 4px 4px 0px #000000;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+/* 
+  Global & Reset 
+*/
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
+
+/* ANIMATIONS */
+@keyframes fadeInSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseSpinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
     body {
       background-color: var(--bg);
@@ -64,6 +74,11 @@
       text-align: center;
       border-radius: 16px;
       color: #ffffff;
+  z-index: 1;
+  animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.login-header {
+  text-align: center;
     }
     .login-box img {
       width: 80px;
@@ -113,16 +128,19 @@
       border: var(--border);
       box-shadow: var(--shadow);
       font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-      border-radius: 4px;
-      margin-top: 10px;
-    }
-
-    .btn-login:active {
-      transform: translate(4px, 4px);
-      box-shadow: 0 0 0 #000;
+      font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-login:hover {
+  background: #d68910;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(230, 126, 34, 0.4);
+}
+.btn-login:active {
+  transform: translateY(1px);
+}
+.login-footer {
     }
 
     .error-msg {
@@ -362,8 +380,13 @@
     th, td {
       padding: 12px;
       text-align: left;
-      border-bottom: 1px solid #eee;
-    }
+      border-bottom: 1px solid #ddd;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+table tbody tr:hover {
+  background-color: rgba(230, 126, 34, 0.05);
+}
+.badge {   }
 
     th {
       font-weight: bold;
@@ -372,13 +395,23 @@
 
     .btn-action {
       background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      margin: 0 5px;
-    }
-    .btn-edit { color: #2980b9; }
-    .btn-delete { color: #c0392b; }
+      border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.8);
+  filter: brightness(1.1);
+}
+.btn-action:active {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 0px rgba(0,0,0,0.8);
+}
+.btn-danger { background: #e74c3c; color: white; }
+.btn-success { background: #2ecc71; color: white; }  .btn-delete { color: #c0392b; }
 
     /* BOTTOM NAV (Mobile) */
     .bottom-nav {
@@ -596,7 +629,7 @@
           <li><a href="#" id="nav-dompet-sidebar"><i class="fas fa-wallet"></i> Dompet</a></li>
           <li><a href="#" id="nav-kategori-sidebar"><i class="fas fa-tags"></i> Kategori</a></li>
           <li><a href="#" onclick="document.getElementById('modal-export').style.display='flex'; return false;"><i class="fas fa-file-export"></i> Export</a></li>
-          <li><a href="#" onclick="alert('Fitur Pengaturan sedang dalam pengembangan!'); return false;"><i class="fas fa-cog"></i> Pengaturan</a></li>
+          <li><a href="#" onclick="document.getElementById('settings-modal').style.display='flex'; return false;"><i class="fas fa-cog"></i> Pengaturan</a></li>
         </ul>
         <div class="sidebar-footer">
           <a href="#" id="btn-logout-sidebar" style="color:#e74c3c; text-decoration:none; display:flex; align-items:center; gap:10px;"><i class="fas fa-sign-out-alt"></i> Keluar</a>
@@ -1083,6 +1116,39 @@
       </div>
 
       <button type="button" class="btn-login" id="btn-do-export" style="background-color: #27ae60;"><i class="fas fa-file-excel"></i> UNDUH EXCEL</button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2 id="settings-modal-title"><i class="fas fa-cog"></i> Pengaturan</h2>
+        <span class="close-modal" id="close-settings-modal" onclick="document.getElementById('settings-modal').style.display='none'">&times;</span>
+      </div>
+      <form id="settings-form" style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
+        <div class="input-group">
+          <label>Kategori Pengeluaran</label>
+          <select id="setting-kategori" class="retro-input" required>
+            <option value="">Pilih Kategori...</option>
+            <option value="Makanan">Makanan</option>
+            <option value="Transportasi">Transportasi</option>
+            <option value="Belanja">Belanja</option>
+            <option value="Tagihan">Tagihan</option>
+            <option value="Hiburan">Hiburan</option>
+            <option value="Konsumsi">Konsumsi</option>
+            <option value="Utilitas">Utilitas</option>
+            <option value="Lain-lain">Lain-lain</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Batas Anggaran Bulanan (Rp)</label>
+          <input type="number" id="setting-anggaran" class="retro-input" placeholder="Contoh: 2000000" required>
+        </div>
+        <button type="submit" class="btn-login" style="background:var(--primary); color:white; width:100%; margin-top:10px;">
+          SIMPAN PENGATURAN
+        </button>
+      </form>
     </div>
   </div>
 
