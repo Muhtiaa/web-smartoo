@@ -798,7 +798,7 @@ document.addEventListener('DOMContentLoaded', () => {
       bulan_tahun: formTanggal && formTanggal.value ? formTanggal.value.substring(0, 7) + '-01' : ""
     };
 
-    btnSaveCrud.textContent = "Menyimpan...";
+    btnSaveCrud.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 5px;"></i> Menyimpan...';
     btnSaveCrud.disabled = true;
     try {
       const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-crud', {
@@ -825,7 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
       crudError.style.display = "block";
       showToast("Kesalahan koneksi", "error");
     } finally {
-      btnSaveCrud.textContent = "SIMPAN TRANSAKSI";
+      btnSaveCrud.innerHTML = "SIMPAN TRANSAKSI";
       btnSaveCrud.disabled = false;
     }
   });
