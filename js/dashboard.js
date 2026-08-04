@@ -737,7 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set default date/time to now
     const now = new Date();
     if(formTanggal) formTanggal.value = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
-    if(formWaktu) formWaktu.value = now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).substring(0,5);
+    if(formWaktu) formWaktu.value = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).substring(0,5);
     
     // Reset Mutasi UI
     if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'none';
