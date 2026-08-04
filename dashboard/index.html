@@ -52,14 +52,16 @@
     }
 
     .login-box {
-      background: var(--card-bg);
-      border: var(--border);
-      box-shadow: 8px 8px 0px #000;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       padding: 40px;
       width: 90%;
       max-width: 400px;
       text-align: center;
-      border-radius: 8px;
+      border-radius: 16px;
     }
 
     .login-box img {
@@ -850,8 +852,8 @@
       </div>
       <ul class="nav-links" style="padding: 0;">
         <li><a href="#" id="nav-kategori-mobile" style="color: var(--text); padding: 15px;"><i class="fas fa-tags"></i> Kategori</a></li>
-        <li><a href="#" onclick="exportExcel(); return false;" style="color: var(--text); padding: 15px;"><i class="fas fa-file-export"></i> Export Excel</a></li>
-        <li><a href="#" style="color: var(--text); padding: 15px;"><i class="fas fa-cog"></i> Pengaturan</a></li>
+        <li><a href="#" id="nav-export-mobile" style="color: var(--text); padding: 15px;"><i class="fas fa-file-export"></i> Export Data</a></li>
+        <li><a href="#" onclick="alert('Fitur Pengaturan sedang dalam pengembangan!'); return false;" style="color: var(--text); padding: 15px;"><i class="fas fa-cog"></i> Pengaturan</a></li>
         <li><a href="#" id="btn-logout-mobile" style="color: #e74c3c; padding: 15px;"><i class="fas fa-sign-out-alt"></i> Keluar</a></li>
       </ul>
     </div>
