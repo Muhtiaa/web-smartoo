@@ -378,8 +378,10 @@
     .bottom-nav ul {
       display: flex;
       justify-content: space-around;
+      align-items: center;
       list-style: none;
-      padding: 10px 0;
+      padding: 5px 0;
+      position: relative;
     }
 
     .bottom-nav a {
@@ -390,14 +392,47 @@
       align-items: center;
       font-size: 0.7rem;
       gap: 5px;
+      padding: 5px;
     }
 
     .bottom-nav a.active {
       color: var(--accent);
+      font-weight: bold;
     }
 
     .bottom-nav i {
       font-size: 1.2rem;
+    }
+
+    /* FAB for Mobile */
+    .fab-mobile-container {
+      position: relative;
+      top: -25px;
+    }
+    
+    .fab-mobile {
+      background: var(--accent);
+      color: #fff !important;
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: var(--border);
+      box-shadow: 2px 2px 0px #000;
+      text-decoration: none;
+      font-size: 1.5rem !important;
+      margin: 0 auto;
+    }
+    
+    .fab-mobile i {
+      font-size: 1.5rem !important;
+    }
+    
+    .fab-mobile:active {
+      transform: translate(2px, 2px);
+      box-shadow: none;
     }
 
     /* MODAL CRUD */
@@ -454,10 +489,47 @@
       opacity: 1;
     }
 
+    /* TOAST NOTIFICATION */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: #fff;
+      color: #333;
+      padding: 15px 25px;
+      border-radius: 5px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-left: 5px solid;
+      font-weight: bold;
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    .toast.success { border-color: #2ecc71; }
+    .toast.error { border-color: #e74c3c; }
+
+    .toast.success i { color: #2ecc71; }
+    .toast.error i { color: #e74c3c; }
+
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .bottom-nav { display: block; }
-      .main-content { padding: 15px; padding-bottom: 80px; }
+      .header-actions { display: none; }
+      .main-content { padding: 15px; padding-bottom: 90px; }
       .summary-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
@@ -467,6 +539,9 @@
   <link rel="alternate" hreflang="en" href="https://smart-oo.me/en/dashboard/" />
 </head>
 <body>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" class="toast-container"></div>
 
   <!-- ================= LOGIN SECTION ================= -->
   <div id="login-section">
@@ -755,6 +830,12 @@
     <ul>
       <li><a href="#" class="active" id="nav-dashboard-mobile"><i class="fas fa-home"></i> Beranda</a></li>
       <li><a href="#" id="nav-transaksi-mobile"><i class="fas fa-exchange-alt"></i> Transaksi</a></li>
+      
+      <!-- FAB in Center -->
+      <li class="fab-mobile-container">
+        <a href="#" class="fab-mobile" id="btn-catat-mobile"><i class="fas fa-plus"></i></a>
+      </li>
+
       <li><a href="#" id="nav-dompet-mobile"><i class="fas fa-wallet"></i> Dompet</a></li>
       <li><a href="#" id="nav-lainnya-mobile"><i class="fas fa-bars"></i> Lainnya</a></li>
     </ul>
