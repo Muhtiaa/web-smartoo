@@ -154,11 +154,11 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('smartoo_phone');
         localStorage.removeItem('smartoo_otp');
         localStorage.removeItem('smartoo_id_wa');
-        loginSection.style.display = 'flex';
+        loginSection.classList.add('show');
       }
     } else {
       // Tidak ada sesi, tampilkan login
-      loginSection.style.display = 'flex';
+      loginSection.classList.add('show');
       dashboardSection.style.display = 'none';
     }
   };
@@ -450,12 +450,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const expDateEnd = document.getElementById('export-date-end');
 
   window.exportExcel = () => {
-    if(modalLainnya) modalLainnya.style.display = 'none';
-    if(modalExport) modalExport.style.display = 'flex';
+    if(modalLainnya) modalLainnya.classList.remove('show');
+    if(modalExport) modalExport.classList.add('show');
   };
   
   if (btnCloseExport) btnCloseExport.addEventListener('click', () => {
-    modalExport.style.display = 'none';
+    modalExport.classList.remove('show');
   });
 
   if (exportRentang) {
@@ -745,7 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     modalTitle.textContent = "Catat Transaksi";
     crudError.style.display = "none";
-    modal.style.display = "flex";
+    modal.classList.add('show');
   };
 
   if(btnCatat) btnCatat.addEventListener('click', showCatatModal);
@@ -757,7 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnCloseModal.addEventListener('click', () => {
-    modal.style.display = "none";
+    modal.classList.remove('show');
   });
 
   // Handle Form Submit
@@ -809,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const resData = await response.json();
       
       if (resData.status === 'sukses') {
-        modal.style.display = "none";
+        modal.classList.remove('show');
         showToast("Transaksi berhasil disimpan!", "success");
         // Refresh Dashboard Data
         const phone = localStorage.getItem('smartoo_phone');
@@ -864,7 +864,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('modal-title').textContent = "Edit Transaksi";
     document.getElementById('crud-error').style.display = "none";
-    document.getElementById('crud-modal').style.display = "flex";
+    document.getElementById('crud-modal').classList.add('show');
   };
 
   window.hapusData = async (id) => {
@@ -903,10 +903,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // ================= ROUTING & FILTER TRANSAKSI =================
   const switchView = (viewName) => {
     // Hide all views
-    if (viewDashboard) viewDashboard.style.display = 'none';
-    if (viewTransaksi) viewTransaksi.style.display = 'none';
-    if (viewDompet) viewDompet.style.display = 'none';
-    if (viewKategori) viewKategori.style.display = 'none';
+    if (viewDashboard) viewDashboard.style.display = 'none'; viewDashboard.classList.remove('view-active');
+    if (viewTransaksi) viewTransaksi.style.display = 'none'; viewTransaksi.classList.remove('view-active');
+    if (viewDompet) viewDompet.style.display = 'none'; viewDompet.classList.remove('view-active');
+    if (viewKategori) viewKategori.style.display = 'none'; viewKategori.classList.remove('view-active');
     
     // Remove active classes
     const allNavs = [
@@ -922,19 +922,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (viewName === 'transaksi') {
       if (navTransaksi) navTransaksi.classList.add('active');
       if (navTransaksiMobile) navTransaksiMobile.classList.add('active');
-      if (viewTransaksi) viewTransaksi.style.display = 'block';
+      if (viewTransaksi) viewTransaksi.style.display = 'block'; viewTransaksi.classList.add('view-active');
       applyFilters(); 
     } else if (viewName === 'dompet') {
       if (navDompetSidebar) navDompetSidebar.classList.add('active');
       if (navDompetMobile) navDompetMobile.classList.add('active');
-      if (viewDompet) viewDompet.style.display = 'block';
+      if (viewDompet) viewDompet.style.display = 'block'; viewDompet.classList.add('view-active');
     } else if (viewName === 'kategori') {
       if (navKategoriSidebar) navKategoriSidebar.classList.add('active');
-      if (viewKategori) viewKategori.style.display = 'block';
+      if (viewKategori) viewKategori.style.display = 'block'; viewKategori.classList.add('view-active');
     } else {
       if (navDashboard) navDashboard.classList.add('active');
       if (navDashboardMobile) navDashboardMobile.classList.add('active');
-      if (viewDashboard) viewDashboard.style.display = 'block';
+      if (viewDashboard) viewDashboard.style.display = 'block'; viewDashboard.classList.add('view-active');
     }
   };
 
@@ -953,22 +953,22 @@ document.addEventListener('DOMContentLoaded', () => {
   if (navKategoriMobile) navKategoriMobile.addEventListener('click', (e) => { 
     e.preventDefault(); 
     switchView('kategori'); 
-    if(modalLainnya) modalLainnya.style.display = 'none'; 
+    if(modalLainnya) modalLainnya.classList.remove('show'); 
   });
   
   if (navExportMobile) navExportMobile.addEventListener('click', (e) => {
     e.preventDefault();
-    if(modalLainnya) modalLainnya.style.display = 'none'; 
+    if(modalLainnya) modalLainnya.classList.remove('show'); 
     const modalExport = document.getElementById('modal-export');
-    if (modalExport) modalExport.style.display = 'flex';
+    if (modalExport) modalExport.classList.add('show');
   });
   
   if (navLainnyaMobile) navLainnyaMobile.addEventListener('click', (e) => {
     e.preventDefault();
-    if(modalLainnya) modalLainnya.style.display = 'flex';
+    if(modalLainnya) modalLainnya.classList.add('show');
   });
   if (btnCloseLainnya) btnCloseLainnya.addEventListener('click', () => {
-    if(modalLainnya) modalLainnya.style.display = 'none';
+    if(modalLainnya) modalLainnya.classList.remove('show');
   });
 
   const applyFilters = () => {
@@ -1249,11 +1249,11 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('kategori-action').value = 'tambah';
       document.getElementById('kategori-id').value = '';
       document.getElementById('modal-title-kategori').textContent = 'Tambah Kategori';
-      if(modalKategori) modalKategori.style.display = 'flex';
+      if(modalKategori) modalKategori.classList.add('show');
     });
   }
   if(btnCloseKategori) btnCloseKategori.addEventListener('click', () => {
-    if(modalKategori) modalKategori.style.display = 'none';
+    if(modalKategori) modalKategori.classList.remove('show');
   });
 
   const modalDompet = document.getElementById('modal-dompet');
@@ -1266,11 +1266,11 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('dompet-action').value = 'tambah';
       document.getElementById('dompet-id').value = '';
       document.getElementById('modal-title-dompet').textContent = 'Tambah Dompet';
-      if(modalDompet) modalDompet.style.display = 'flex';
+      if(modalDompet) modalDompet.classList.add('show');
     });
   }
   if(btnCloseDompet) btnCloseDompet.addEventListener('click', () => {
-    if(modalDompet) modalDompet.style.display = 'none';
+    if(modalDompet) modalDompet.classList.remove('show');
   });
 
   // ================= API KATEGORI =================
@@ -1337,7 +1337,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('kategori-jenis').value = kat.jenis;
     document.getElementById('kategori-nama').value = kat.nama_kategori;
     document.getElementById('modal-title-kategori').textContent = 'Edit Kategori';
-    if(modalKategori) modalKategori.style.display = 'flex';
+    if(modalKategori) modalKategori.classList.add('show');
   };
 
   window.hapusKategori = async (id) => {
@@ -1375,7 +1375,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action, id_whatsapp, id_kategori: id, jenis, nama_kategori: nama })
         });
-        if(modalKategori) modalKategori.style.display = 'none';
+        if(modalKategori) modalKategori.classList.remove('show');
         showToast("Kategori berhasil disimpan!", "success");
         fetchKategori();
       } catch(err) {
@@ -1419,7 +1419,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('dompet-grup').value = dpt.grup;
     document.getElementById('dompet-nama').value = dpt.nama_dompet;
     document.getElementById('modal-title-dompet').textContent = 'Edit Dompet';
-    if(modalDompet) modalDompet.style.display = 'flex';
+    if(modalDompet) modalDompet.classList.add('show');
   };
 
   window.hapusDompet = async (id) => {
@@ -1457,7 +1457,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action, id_whatsapp, id_dompet: id, grup, nama_dompet: nama })
         });
-        if(modalDompet) modalDompet.style.display = 'none';
+        if(modalDompet) modalDompet.classList.remove('show');
         showToast("Dompet berhasil disimpan!", "success");
         fetchDompet();
       } catch(err) {
@@ -1472,3 +1472,5 @@ document.addEventListener('DOMContentLoaded', () => {
   // INIT
   checkSession();
 });
+
+
