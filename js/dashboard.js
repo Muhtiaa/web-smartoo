@@ -105,6 +105,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ================= UTILITIES =================
+  window.showToast = (message, type = 'success') => {
+    const container = document.getElementById('toast-container');
+    if(!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> <span>${message}</span>`;
+    container.appendChild(toast);
+    
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  };
+
   // Format IDR
   const formatRp = (num) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
@@ -206,6 +225,87 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- FETCH DATA DARI API ---
+  const initializeDefaultsIfNeeded = async () => {
+    // Check if we need to initialize
+    const isKategoriEmpty = cachedKategori.filter(k => k.id_kategori).length === 0;
+    const isDompetEmpty = cachedDompet.filter(d => d.id_dompet).length === 0;
+
+    const idWa = localStorage.getItem('smartoo_id_wa');
+    if(!idWa) return;
+
+    let defaultsKategori = [
+      { nama: "Makanan", jenis: "Pengeluaran" },
+      { nama: "Minuman", jenis: "Pengeluaran" },
+      { nama: "Transportasi", jenis: "Pengeluaran" },
+      { nama: "Belanja Bulanan", jenis: "Pengeluaran" },
+      { nama: "Gaji", jenis: "Pemasukan" },
+      { nama: "Bisnis", jenis: "Pemasukan" },
+      { nama: "Hutang", jenis: "Pemasukan" },
+      { nama: "Piutang", jenis: "Pemasukan" },
+      { nama: "Hiburan", jenis: "Pengeluaran" },
+      { nama: "Listrik", jenis: "Pengeluaran" },
+      { nama: "Internet", jenis: "Pengeluaran" },
+      { nama: "Kesehatan", jenis: "Pengeluaran" }
+    ];
+
+    let defaultsDompet = [
+      { nama: "Tunai", grup: "Tunai" },
+      { nama: "BCA", grup: "Bank" },
+      { nama: "Mandiri", grup: "Bank" },
+      { nama: "BRI", grup: "Bank" },
+      { nama: "OVO", grup: "E-Wallet" },
+      { nama: "GoPay", grup: "E-Wallet" },
+      { nama: "Dana", grup: "E-Wallet" },
+      { nama: "ShopeePay", grup: "E-Wallet" }
+    ];
+
+    // Extract unique from activities to merge with defaults
+    if (window.filteredActivities && window.filteredActivities.length > 0) {
+      window.filteredActivities.forEach(act => {
+        if (act.kategori && act.kategori !== "-") {
+          let jenis = act.jenis_transaksi === "Pemasukan" ? "Pemasukan" : "Pengeluaran";
+          if (!defaultsKategori.some(k => k.nama.toLowerCase() === act.kategori.toLowerCase())) {
+            defaultsKategori.push({ nama: act.kategori, jenis: jenis });
+          }
+        }
+        if (act.sumber_dana && act.sumber_dana !== "-") {
+          if (!defaultsDompet.some(d => d.nama.toLowerCase() === act.sumber_dana.toLowerCase())) {
+            let grup = "Bank";
+            if (act.sumber_dana.toLowerCase().includes('tunai') || act.sumber_dana.toLowerCase().includes('cash')) grup = "Tunai";
+            else if (['ovo', 'gopay', 'dana', 'shopeepay', 'linkaja'].some(ew => act.sumber_dana.toLowerCase().includes(ew))) grup = "E-Wallet";
+            defaultsDompet.push({ nama: act.sumber_dana, grup: grup });
+          }
+        }
+      });
+    }
+
+    if (isKategoriEmpty) {
+      console.log("Inisialisasi kategori...");
+      for(let k of defaultsKategori) {
+        try {
+          await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'tambah', id_whatsapp: idWa, nama_kategori: k.nama, jenis: k.jenis })
+          });
+        } catch(e) {}
+      }
+      await window.fetchKategori(); // refresh
+    }
+
+    if (isDompetEmpty) {
+      console.log("Inisialisasi dompet...");
+      for(let d of defaultsDompet) {
+        try {
+          await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'tambah', id_whatsapp: idWa, nama_dompet: d.nama, grup: d.grup })
+          });
+        } catch(e) {}
+      }
+      await window.fetchDompet(); // refresh
+    }
+  };
+
   const fetchDashboardData = async (phone, otp) => {
     try {
       const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-api', {
@@ -229,8 +329,10 @@ document.addEventListener('DOMContentLoaded', () => {
         renderDashboard(data);
         
         // Fetch Dompet & Kategori after successful login
-        fetchKategori();
-        fetchDompet();
+        await window.fetchKategori();
+        await window.fetchDompet();
+        
+        await initializeDefaultsIfNeeded();
         
         return true;
       } else {
@@ -520,7 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- CRUD MODAL LOGIC ---
-  btnCatat.addEventListener('click', () => {
+  const showCatatModal = () => {
     document.getElementById('form-action').value = "tambah";
     document.getElementById('form-id').value = "";
     crudForm.reset();
@@ -537,6 +639,14 @@ document.addEventListener('DOMContentLoaded', () => {
     modalTitle.textContent = "Catat Transaksi";
     crudError.style.display = "none";
     modal.style.display = "flex";
+  };
+
+  if(btnCatat) btnCatat.addEventListener('click', showCatatModal);
+  
+  const btnCatatMobile = document.getElementById('btn-catat-mobile');
+  if(btnCatatMobile) btnCatatMobile.addEventListener('click', (e) => {
+    e.preventDefault();
+    showCatatModal();
   });
 
   btnCloseModal.addEventListener('click', () => {
@@ -592,6 +702,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (resData.status === 'sukses') {
         modal.style.display = "none";
+        showToast("Transaksi berhasil disimpan!", "success");
         // Refresh Dashboard Data
         const phone = localStorage.getItem('smartoo_phone');
         const otp = localStorage.getItem('smartoo_otp');
@@ -599,10 +710,12 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         crudError.textContent = resData.message || "Gagal menyimpan data.";
         crudError.style.display = "block";
+        showToast("Gagal menyimpan transaksi", "error");
       }
     } catch (err) {
       crudError.textContent = "Terjadi kesalahan koneksi.";
       crudError.style.display = "block";
+      showToast("Kesalahan koneksi", "error");
     } finally {
       btnSaveCrud.textContent = "SIMPAN TRANSAKSI";
     }
@@ -650,22 +763,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!confirmDelete) return;
 
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
+    if (!id_whatsapp) return;
+
     try {
       const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'hapus', id_transaksi: id, id_whatsapp: id_whatsapp })
+        body: JSON.stringify({
+          action: 'hapus',
+          id_transaksi: id,
+          id_whatsapp: id_whatsapp
+        })
       });
       const resData = await response.json();
       if (resData.status === 'sukses') {
+        showToast("Transaksi berhasil dihapus!", "success");
         const phone = localStorage.getItem('smartoo_phone');
         const otp = localStorage.getItem('smartoo_otp');
-        await fetchDashboardData(phone, otp); // Refresh table
+        await fetchDashboardData(phone, otp);
       } else {
+        showToast("Gagal menghapus data.", "error");
         alert(resData.message || "Gagal menghapus data.");
       }
-    } catch(err) {
-      alert("Terjadi kesalahan koneksi saat menghapus.");
+    } catch (err) {
+      showToast("Terjadi kesalahan.", "error");
+      console.error(err);
     }
   };
 
@@ -678,7 +800,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (viewKategori) viewKategori.style.display = 'none';
     
     // Remove active classes
-    [navDashboard, navDashboardMobile, navTransaksi, navTransaksiMobile, navDompetMobile].forEach(nav => {
+    const allNavs = [
+      navDashboard, navDashboardMobile, 
+      navTransaksi, navTransaksiMobile, 
+      navDompetSidebar, navDompetMobile, 
+      navKategoriSidebar
+    ];
+    allNavs.forEach(nav => {
       if(nav) nav.classList.remove('active');
     });
 
@@ -688,9 +816,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (viewTransaksi) viewTransaksi.style.display = 'block';
       applyFilters(); 
     } else if (viewName === 'dompet') {
+      if (navDompetSidebar) navDompetSidebar.classList.add('active');
       if (navDompetMobile) navDompetMobile.classList.add('active');
       if (viewDompet) viewDompet.style.display = 'block';
     } else if (viewName === 'kategori') {
+      if (navKategoriSidebar) navKategoriSidebar.classList.add('active');
       if (viewKategori) viewKategori.style.display = 'block';
     } else {
       if (navDashboard) navDashboard.classList.add('active');
@@ -947,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let cachedKategori = [];
   window.fetchKategori = async () => {
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
-    if(!id_whatsapp) return;
+    if(!id_whatsapp) return false;
     try {
       const res = await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
         method: 'POST',
@@ -958,10 +1088,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if(data.status === 'sukses' && data.data) {
         cachedKategori = data.data;
         renderKategori();
+        return true;
       }
     } catch(err) {
       console.error('Gagal fetch kategori', err);
     }
+    return false;
   };
 
   const renderKategori = () => {
@@ -1015,11 +1147,12 @@ document.addEventListener('DOMContentLoaded', () => {
       await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'hapus', id_kategori: id, id_whatsapp })
+        body: JSON.stringify({ action: 'hapus', id_whatsapp, id_kategori: id })
       });
+      showToast("Kategori berhasil dihapus!", "success");
       fetchKategori();
     } catch(err) {
-      alert('Gagal hapus kategori');
+      showToast("Gagal menghapus kategori", "error");
     }
   };
 
@@ -1042,9 +1175,10 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify({ action, id_whatsapp, id_kategori: id, jenis, nama_kategori: nama })
         });
         if(modalKategori) modalKategori.style.display = 'none';
+        showToast("Kategori berhasil disimpan!", "success");
         fetchKategori();
       } catch(err) {
-        alert('Gagal menyimpan kategori');
+        showToast("Gagal menyimpan kategori", "error");
       } finally {
         btnSave.textContent = 'SIMPAN KATEGORI';
       }
@@ -1055,7 +1189,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let cachedDompet = [];
   window.fetchDompet = async () => {
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
-    if(!id_whatsapp) return;
+    if(!id_whatsapp) return false;
     try {
       const res = await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
         method: 'POST',
@@ -1066,10 +1200,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if(data.status === 'sukses' && data.data) {
         cachedDompet = data.data;
         renderDompet();
+        return true;
       }
     } catch(err) {
       console.error('Gagal fetch dompet', err);
     }
+    return false;
   };
 
   const renderDompet = () => {
@@ -1152,11 +1288,12 @@ document.addEventListener('DOMContentLoaded', () => {
       await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'hapus', id_dompet: id, id_whatsapp })
+        body: JSON.stringify({ action: 'hapus', id_whatsapp, id_dompet: id })
       });
+      showToast("Dompet berhasil dihapus!", "success");
       fetchDompet();
     } catch(err) {
-      alert('Gagal hapus dompet');
+      showToast("Gagal menghapus dompet", "error");
     }
   };
 
@@ -1179,9 +1316,10 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify({ action, id_whatsapp, id_dompet: id, grup, nama_dompet: nama })
         });
         if(modalDompet) modalDompet.style.display = 'none';
+        showToast("Dompet berhasil disimpan!", "success");
         fetchDompet();
       } catch(err) {
-        alert('Gagal menyimpan dompet');
+        showToast("Gagal menyimpan dompet", "error");
       } finally {
         btnSave.textContent = 'SIMPAN DOMPET';
       }
