@@ -112,7 +112,7 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
       border: 2px solid var(--accent);
       position: relative;
       z-index: 1;
-      animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards, floatingBox 4s ease-in-out infinite;
+      animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 .login-header {
   text-align: center;
@@ -142,6 +142,11 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
       font-weight: bold;
       margin-bottom: 5px;
       font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .login-box .input-group label {
+      color: #ffffff; /* Warna putih agar terbaca di background gelap */
     }
 
     .retro-input {
@@ -636,6 +641,39 @@ table tbody tr:hover {
       .header-actions { display: none; }
       .main-content { padding: 15px; padding-bottom: 90px; }
       .summary-grid { grid-template-columns: 1fr 1fr; }
+      
+      /* Mobile Table Card Layout */
+      table { min-width: 100% !important; border: 0; }
+      table thead { display: none; }
+      table tbody tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+        background: #fff;
+      }
+      table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: right;
+        border-bottom: 1px dashed #eee;
+        padding: 8px 5px;
+      }
+      table tbody td:last-child { 
+        border-bottom: none; 
+        justify-content: flex-end; 
+        gap: 10px; 
+      }
+      table tbody td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #666;
+        text-align: left;
+        margin-right: 15px;
+      }
     }
   </style>
 
