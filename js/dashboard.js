@@ -646,8 +646,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <td data-label="Kategori">${act.kategori}</td>
           <td data-label="Nominal" style="color:${color}; font-weight:bold;">${symbol} ${formatRp(act.nominal)}          </td>
           <td data-label="Aksi">
-            <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')"><i class="fas fa-edit"></i></button>
-            <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')"><i class="fas fa-trash"></i></button>
+            <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')"><i class="fas fa-edit"></i> Edit</button>
+            <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')"><i class="fas fa-trash"></i> Hapus</button>
           </td>
         `;
         tableBodyDashboard.appendChild(tr);
@@ -1111,7 +1111,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       totalAllSaldo += saldo;
-      if (totals[dpt.grup] !== undefined) totals[dpt.grup] += 1;
+      if (totals[dpt.grup] !== undefined) totals[dpt.grup] += saldo;
       hasDompet = true;
       optHtml += `<option value="${dpt.nama_dompet}">${dpt.nama_dompet}</option>`;
 
@@ -1121,8 +1121,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <td data-label="Grup">${dpt.grup}</td>
         <td data-label="Saldo">${formatRp(saldo)}</td>
         <td data-label="Aksi" class="action-buttons">
-          <button class="btn-action btn-edit" onclick="editDompet('${dpt.id_dompet}', '${dpt.grup}', '${dpt.nama_dompet}')"><i class="fas fa-edit"></i></button>
-          <button class="btn-action btn-delete" onclick="hapusDompet('${dpt.id_dompet}')"><i class="fas fa-trash"></i></button>
+          <button class="btn-action btn-edit" onclick="editDompet('${dpt.id_dompet}', '${dpt.grup}', '${dpt.nama_dompet}')"><i class="fas fa-edit"></i> Edit</button>
+          <button class="btn-action btn-delete" onclick="hapusDompet('${dpt.id_dompet}')"><i class="fas fa-trash"></i> Hapus</button>
         </td>
       `;
       if(tblDompet) tblDompet.appendChild(tr);
@@ -1137,7 +1137,7 @@ document.addEventListener('DOMContentLoaded', () => {
        if (cardsDompet) cardsDompet.innerHTML += `
          <div class="card" style="padding:15px; border-left:4px solid var(--primary);">
            <div class="card-title">${grp}</div>
-           <div class="card-value" style="font-size:1.2rem;">${d} Akun</div>
+           <div class="card-value" style="font-size:1.2rem;">${formatRp(d)}</div>
          </div>
        `;
     });
@@ -1181,8 +1181,8 @@ document.addEventListener('DOMContentLoaded', () => {
           ${symbol} ${formatRp(act.nominal || 0)}
         </td>
         <td data-label="Aksi">
-          <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')"><i class="fas fa-edit"></i></button>
-          <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')"><i class="fas fa-trash"></i></button>
+          <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')"><i class="fas fa-edit"></i> Edit</button>
+          <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')"><i class="fas fa-trash"></i> Hapus</button>
         </td>
       `;
       tableBodyTransaksi.appendChild(tr);
@@ -1315,8 +1315,8 @@ document.addEventListener('DOMContentLoaded', () => {
       tr.innerHTML = `
         <td data-label="Nama Kategori">${kat.nama_kategori}</td>
         <td data-label="Aksi">
-          <button class="btn-action btn-edit" onclick="editKategori('${kat.id_kategori}')"><i class="fas fa-edit"></i></button>
-          <button class="btn-action btn-delete" onclick="hapusKategori('${kat.id_kategori}')"><i class="fas fa-trash"></i></button>
+          <button class="btn-action btn-edit" onclick="editKategori('${kat.id_kategori}')"><i class="fas fa-edit"></i> Edit</button>
+          <button class="btn-action btn-delete" onclick="hapusKategori('${kat.id_kategori}')"><i class="fas fa-trash"></i> Hapus</button>
         </td>
       `;
       if(kat.jenis === 'Pemasukan' && tblPemasukan) { tblPemasukan.appendChild(tr); hasPemasukan = true; }
