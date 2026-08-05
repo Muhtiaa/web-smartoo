@@ -641,11 +641,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${act.tanggal} <br><small>${act.waktu}</small></td>
-          <td><strong>${act.keterangan}</strong></td>
-          <td>${act.kategori}</td>
-          <td style="color:${color}; font-weight:bold;">${symbol} ${formatRp(act.nominal)}          </td>
-          <td>
+          <td data-label="Tanggal">${act.tanggal} <br><small>${act.waktu}</small></td>
+          <td data-label="Keterangan"><strong>${act.keterangan}</strong></td>
+          <td data-label="Kategori">${act.kategori}</td>
+          <td data-label="Nominal" style="color:${color}; font-weight:bold;">${symbol} ${formatRp(act.nominal)}          </td>
+          <td data-label="Aksi">
             <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')"><i class="fas fa-edit"></i></button>
             <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')"><i class="fas fa-trash"></i></button>
           </td>
@@ -1117,10 +1117,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${dpt.nama_dompet}</td>
-        <td>${dpt.grup}</td>
-        <td>${formatRp(saldo)}</td>
-        <td class="action-buttons">
+        <td data-label="Nama Dompet">${dpt.nama_dompet}</td>
+        <td data-label="Grup">${dpt.grup}</td>
+        <td data-label="Saldo">${formatRp(saldo)}</td>
+        <td data-label="Aksi" class="action-buttons">
           <button class="btn-action btn-edit" onclick="editDompet('${dpt.id_dompet}', '${dpt.grup}', '${dpt.nama_dompet}')"><i class="fas fa-edit"></i></button>
           <button class="btn-action btn-delete" onclick="hapusDompet('${dpt.id_dompet}')"><i class="fas fa-trash"></i></button>
         </td>
@@ -1168,19 +1168,19 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>
+        <td data-label="Tanggal">
           <div style="font-weight:bold;">${act.tanggal || '-'}</div>
           <div style="font-size:0.8rem; color:#888;">${act.waktu || '-'}</div>
         </td>
-        <td>
+        <td data-label="Keterangan">
           <div style="font-weight:bold;">${act.keterangan || '-'}</div>
           <div style="font-size:0.8rem; color:#888;">${act.kategori || '-'}</div>
         </td>
-        <td>${act.sumber_dana || '-'}</td>
-        <td style="color: ${color}; font-weight: bold;">
+        <td data-label="Sumber Dana">${act.sumber_dana || '-'}</td>
+        <td data-label="Nominal" style="color: ${color}; font-weight: bold;">
           ${symbol} ${formatRp(act.nominal || 0)}
         </td>
-        <td>
+        <td data-label="Aksi">
           <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')"><i class="fas fa-edit"></i></button>
           <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')"><i class="fas fa-trash"></i></button>
         </td>
@@ -1313,8 +1313,8 @@ document.addEventListener('DOMContentLoaded', () => {
       optHtml += `<option value="${kat.nama_kategori}">${kat.nama_kategori}</option>`;
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${kat.nama_kategori}</td>
-        <td>
+        <td data-label="Nama Kategori">${kat.nama_kategori}</td>
+        <td data-label="Aksi">
           <button class="btn-action btn-edit" onclick="editKategori('${kat.id_kategori}')"><i class="fas fa-edit"></i></button>
           <button class="btn-action btn-delete" onclick="hapusKategori('${kat.id_kategori}')"><i class="fas fa-trash"></i></button>
         </td>
