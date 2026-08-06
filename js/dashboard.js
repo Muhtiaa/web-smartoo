@@ -161,21 +161,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- SESI LOGIN (localStorage) ---
   const checkSession = async () => {
     const savedPhone = localStorage.getItem('smartoo_phone');
-    const savedOtp = localStorage.getItem('smartoo_otp');
+    const savedToken = localStorage.getItem('smartoo_token');
 
-    if (savedPhone && savedOtp) {
+    if (savedPhone && savedToken) {
       // Sembunyikan login sementara memverifikasi
       loginSection.style.display = 'none';
       dashboardSection.style.display = 'none';
       
-      const success = await fetchDashboardData(savedPhone, savedOtp);
+      const success = await fetchDashboardData(savedPhone, { token: savedToken });
       
       if (success) {
         dashboardSection.style.display = 'block';
       } else {
         // Jika gagal verifikasi sesi, hapus storage dan munculkan form login
         localStorage.removeItem('smartoo_phone');
-        localStorage.removeItem('smartoo_otp');
+        localStorage.removeItem('smartoo_token');
         localStorage.removeItem('smartoo_id_wa');
         loginSection.style.display = 'flex';
       }
@@ -189,15 +189,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const handleLogout = async (e) => {
     if (e) e.preventDefault();
     const phone = localStorage.getItem('smartoo_phone');
-    const otp = localStorage.getItem('smartoo_otp');
+    const token = localStorage.getItem('smartoo_token');
 
-    // Beritahu server untuk MENGHAPUS OTP ini secara permanen agar tidak bisa dipakai login 2 kali
-    if (phone && otp) {
+    // Beritahu server untuk MENGHAPUS token ini secara permanen agar tidak bisa dipakai login 2 kali
+    if (phone && token) {
       try {
         await fetch(API_ENDPOINTS.crud, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'logout', phone: phone, otp: otp })
+          body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'), action: 'logout', phone: phone, token: token })
         });
       } catch (err) {
         console.error("Gagal menghubungi server saat logout", err);
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     localStorage.removeItem('smartoo_phone');
-    localStorage.removeItem('smartoo_otp');
+    localStorage.removeItem('smartoo_token');
     localStorage.removeItem('smartoo_id_wa');
     window.location.reload();
   };
@@ -233,11 +233,11 @@ document.addEventListener('DOMContentLoaded', () => {
     btnLogin.disabled = true;
     loginError.style.display = "none";
 
-    // Simpan ke localStorage sementara (akan dihapus kalau gagal)
+    // Jangan simpan OTP mentah di localStorage lagi.
+    // Otp hanya dikirim sekali saat login. Token akan disimpan setelah sukses.
     localStorage.setItem('smartoo_phone', phone);
-    localStorage.setItem('smartoo_otp', otp);
 
-    const success = await fetchDashboardData(phone, otp);
+    const success = await fetchDashboardData(phone, { otp: otp });
     
     if (success) {
       loginSection.style.display = "none";
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnLogin.textContent = "MASUK DASHBOARD";
       btnLogin.disabled = false;
       localStorage.removeItem('smartoo_phone');
-      localStorage.removeItem('smartoo_otp');
+      localStorage.removeItem('smartoo_token');
     }
   });
 
@@ -265,7 +265,6 @@ document.addEventListener('DOMContentLoaded', () => {
       { nama: "Tip", jenis: "Pemasukan" },
       { nama: "Hasil Usaha", jenis: "Pemasukan" },
       { nama: "Investasi", jenis: "Pemasukan" },
-      { nama: "Utang", jenis: "Pemasukan" },
       { nama: "Makanan", jenis: "Pengeluaran" },
       { nama: "Transportasi", jenis: "Pengeluaran" },
       { nama: "Hiburan", jenis: "Pengeluaran" },
@@ -276,8 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { nama: "Belanja Online", jenis: "Pengeluaran" },
       { nama: "Asuransi", jenis: "Pengeluaran" },
       { nama: "Donasi", jenis: "Pengeluaran" },
-      { nama: "Lain-lain", jenis: "Pengeluaran" },
-      { nama: "Piutang", jenis: "Pengeluaran" }
+      { nama: "Lain-lain", jenis: "Pengeluaran" }
     ];
 
     let defaultsDompet = [
@@ -313,39 +311,31 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    let hasAddedKategori = false;
-    for(let k of defaultsKategori) {
-      if (!cachedKategori.some(c => c.nama_kategori.toLowerCase() === k.nama.toLowerCase() && c.jenis === k.jenis)) {
+      if (isKategoriEmpty) {
         try {
-          console.log("Menambahkan kategori default yang hilang: " + k.nama);
+          console.log("Meminta backend untuk menginisialisasi kategori default...");
           await fetch(API_ENDPOINTS.kategori, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'tambah', id_whatsapp: idWa, nama_kategori: k.nama, jenis: k.jenis })
+            body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'), action: 'init_defaults', id_whatsapp: idWa })
           });
-          hasAddedKategori = true;
-        } catch(e) {}
+          await window.fetchKategori(); // refresh
+        } catch(e) {
+          console.error("Gagal init kategori default", e);
+        }
       }
-    }
-    if (hasAddedKategori) {
-      await window.fetchKategori(); // refresh
-    }
-
-    let hasAddedDompet = false;
-    for(let d of defaultsDompet) {
-      if (!cachedDompet.some(c => c.nama_dompet.toLowerCase() === d.nama.toLowerCase())) {
+  
+      if (isDompetEmpty) {
         try {
-          console.log("Menambahkan dompet default yang hilang: " + d.nama);
+          console.log("Meminta backend untuk menginisialisasi dompet default...");
           await fetch(API_ENDPOINTS.dompet, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'tambah', id_whatsapp: idWa, nama_dompet: d.nama, grup: d.grup })
+            body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'), action: 'init_defaults', id_whatsapp: idWa })
           });
-          hasAddedDompet = true;
-        } catch(e) {}
+          await window.fetchDompet(); // refresh
+        } catch(e) {
+          console.error("Gagal init dompet default", e);
+        }
       }
-    }
-    if (hasAddedDompet) {
-      await window.fetchDompet(); // refresh
-    }
 
     // --- AUTO CLEANUP DUPLICATES & WRONG CATEGORIES ---
     // If there are duplicate names in cachedKategori or cachedDompet, keep the first one and delete the rest.
@@ -375,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           await fetch(API_ENDPOINTS.kategori, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'hapus', id_whatsapp: idWa, id_kategori: k.id_kategori })
+            body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'), action: 'hapus', id_whatsapp: idWa, id_kategori: k.id_kategori })
           });
           hasDeletedKategori = true;
         } catch(e) {}
@@ -393,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           await fetch(API_ENDPOINTS.dompet, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'hapus', id_whatsapp: idWa, id_dompet: d.id_dompet })
+            body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'), action: 'hapus', id_whatsapp: idWa, id_dompet: d.id_dompet })
           });
           hasDuplicateDompet = true;
         } catch(e) {}
@@ -404,12 +394,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (hasDuplicateDompet) await window.fetchDompet();
   };
 
-  const fetchDashboardData = async (phone, otp) => {
+  const fetchDashboardData = async (phone, authPayload) => {
     try {
+      const payloadBody = Object.assign({ phone: phone }, authPayload);
       const response = await fetch(API_ENDPOINTS.dashboard, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phone, otp: otp })
+        body: JSON.stringify(payloadBody)
       });
       
       const data = await response.json();
@@ -422,6 +413,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (idWa) {
           localStorage.setItem('smartoo_id_wa', idWa);
+        }
+        
+        // Simpan token (atau idWa sementara sebagai token fallback)
+        const token = data.token || idWa;
+        if (token) {
+          localStorage.setItem('smartoo_token', token);
         }
         
         renderDashboard(data);
@@ -656,6 +653,20 @@ document.addEventListener('DOMContentLoaded', () => {
     valSaldo.textContent = formatRp(metrics.balance);
     valPemasukan.textContent = formatRp(metrics.income);
     valPengeluaran.textContent = formatRp(metrics.expense);
+    
+    // Cek Batas Anggaran
+    const budgetLimitStr = localStorage.getItem('smartoo_budget');
+    if (budgetLimitStr) {
+      const budgetLimit = parseInt(budgetLimitStr, 10);
+      if (metrics.expense > budgetLimit) {
+        valPengeluaran.style.color = '#ff6b81'; // merah terang
+        valPengeluaran.style.fontWeight = 'bold';
+      } else {
+        valPengeluaran.style.color = '';
+        valPengeluaran.style.fontWeight = '';
+      }
+    }
+    
     valUtang.textContent = formatRp(metrics.debt);
     valPiutang.textContent = formatRp(metrics.piutang || 0);
 
@@ -728,8 +739,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (act.jenis_transaksi === 'Pengeluaran') dailyData[date].expense += chartNominal;
       });
 
-      labels = Object.keys(dailyData).sort();
-      labels.forEach(date => {
+        labels = Object.keys(dailyData).sort((a, b) => {
+          const dateA = window.parseCustomDate ? window.parseCustomDate(a) : new Date(a);
+          const dateB = window.parseCustomDate ? window.parseCustomDate(b) : new Date(b);
+          return dateA - dateB;
+        });
+        labels.forEach(date => {
         dataIncome.push(dailyData[date].income);
         dataExpense.push(dailyData[date].expense);
       });
@@ -832,6 +847,8 @@ document.addEventListener('DOMContentLoaded', () => {
       tanggal: formTanggal ? formTanggal.value : "",
       waktu: formWaktu ? formWaktu.value : "",
       bulan_tahun: formTanggal && formTanggal.value ? formTanggal.value.substring(0, 7) + '-01' : ""
+    ,
+      token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone')
     };
 
     btnSaveCrud.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 5px;"></i> Menyimpan...';
@@ -847,10 +864,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resData.status === 'sukses') {
         modal.classList.remove('show');
         showToast("Transaksi berhasil disimpan!", "success");
-        // Refresh Dashboard Data
-        const phone = localStorage.getItem('smartoo_phone');
-        const otp = localStorage.getItem('smartoo_otp');
-        await fetchDashboardData(phone, otp);
+        // Optimistic UI Update
+        if (action === 'tambah') {
+          payload.id_transaksi = resData.id_transaksi || payload.id_transaksi || "TEMP-" + Date.now();
+          cachedActivities.unshift(payload);
+        } else {
+          const idx = cachedActivities.findIndex(a => a.id_transaksi === id_transaksi);
+          if (idx !== -1) cachedActivities[idx] = Object.assign({}, cachedActivities[idx], payload);
+        }
+        renderDashboard({ activities: cachedActivities });
       } else {
         crudError.textContent = resData.message || "Gagal menyimpan data.";
         crudError.style.display = "block";
@@ -930,7 +952,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch(API_ENDPOINTS.crud, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'),
           action: 'hapus',
           id_transaksi: id,
           id_whatsapp: id_whatsapp
@@ -939,9 +961,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const resData = await response.json();
       if (resData.status === 'sukses') {
         showToast("Transaksi berhasil dihapus!", "success");
-        const phone = localStorage.getItem('smartoo_phone');
-        const otp = localStorage.getItem('smartoo_otp');
-        await fetchDashboardData(phone, otp);
+        cachedActivities = cachedActivities.filter(a => a.id_transaksi !== id);
+        renderDashboard({ activities: cachedActivities });
       } else {
         showToast("Gagal menghapus data.", "error");
         alert(resData.message || "Gagal menghapus data.");
@@ -1351,7 +1372,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(API_ENDPOINTS.kategori, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'read', id_whatsapp })
+        body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'), action: 'read', id_whatsapp })
       });
       const data = await res.json();
       if(data.status === 'sukses' && data.data) {
@@ -1443,7 +1464,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await fetch(API_ENDPOINTS.kategori, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'hapus', id_whatsapp, id_kategori: id })
+        body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'), action: 'hapus', id_whatsapp, id_kategori: id })
       });
       showToast("Kategori berhasil dihapus!", "success");
       fetchKategori();
@@ -1469,7 +1490,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetch(API_ENDPOINTS.kategori, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, id_whatsapp, id_kategori: id, jenis, nama_kategori: nama })
+          body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'), action, id_whatsapp, id_kategori: id, jenis, nama_kategori: nama })
         });
         if(modalKategori) modalKategori.classList.remove('show');
         showToast("Kategori berhasil disimpan!", "success");
@@ -1492,7 +1513,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(API_ENDPOINTS.dompet, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'read', id_whatsapp })
+        body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'), action: 'read', id_whatsapp })
       });
       const data = await res.json();
       if(data.status === 'sukses' && data.data) {
@@ -1525,7 +1546,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await fetch(API_ENDPOINTS.dompet, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'hapus', id_whatsapp, id_dompet: id })
+        body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'), action: 'hapus', id_whatsapp, id_dompet: id })
       });
       showToast("Dompet berhasil dihapus!", "success");
       fetchDompet();
@@ -1551,7 +1572,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetch(API_ENDPOINTS.dompet, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, id_whatsapp, id_dompet: id, grup, nama_dompet: nama })
+          body: JSON.stringify({ token: localStorage.getItem('smartoo_token'), phone: localStorage.getItem('smartoo_phone'), action, id_whatsapp, id_dompet: id, grup, nama_dompet: nama })
         });
         if(modalDompet) modalDompet.classList.remove('show');
         showToast("Dompet berhasil disimpan!", "success");
@@ -1561,6 +1582,23 @@ document.addEventListener('DOMContentLoaded', () => {
       } finally {
         btnSave.textContent = 'SIMPAN DOMPET';
         btnSave.disabled = false;
+      }
+    });
+  }
+
+  // Pengaturan (Batas Anggaran)
+  const settingsForm = document.getElementById('settings-form');
+  if (settingsForm) {
+    settingsForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const budgetInput = document.getElementById('setting-anggaran');
+      if (budgetInput && budgetInput.value) {
+        localStorage.setItem('smartoo_budget', budgetInput.value);
+        showToast("Pengaturan berhasil disimpan!", "success");
+        // Update UI segera
+        renderDashboard({ activities: cachedActivities });
+        const settingsModal = document.getElementById('settings-modal');
+        if (settingsModal) settingsModal.classList.remove('show');
       }
     });
   }
