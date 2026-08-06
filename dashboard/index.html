@@ -331,12 +331,24 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
     }
 
     .card-title {
-      font-size: 0.9rem;
-      color: #666;
-      margin-bottom: 10px;
+      font-size: 1rem;
+      color: var(--text);
+      font-weight: 800;
+      margin-bottom: 15px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .card-title i {
+      background: var(--accent);
+      color: #fff;
+      padding: 6px;
+      border-radius: 4px;
+      border: 2px solid var(--text);
+      box-shadow: 2px 2px 0px var(--text);
+      font-size: 0.8rem;
     }
 
     .card-value {
@@ -381,12 +393,23 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
       box-shadow: 8px 8px 0px #000;
     }
 
-    .chart-box h3 {
-      margin-bottom: 20px;
+    .chart-box h3, .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 20px;
+      margin: -20px -20px 20px -20px;
+      border-bottom: var(--border);
+      border-radius: 6px 6px 0 0;
+      font-weight: 800;
       font-size: 1.1rem;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 10px;
-      flex-shrink: 0;
+    }
+    .table-header h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #fff;
     }
     
     .chart-container-inner {
@@ -404,13 +427,15 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
       overflow-x: auto;
     }
 
-    .table-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 10px;
+    /* .table-header is now merged with .chart-box h3 above */
+    
+    .table-header .btn-action {
+      background: var(--accent);
+      color: #fff;
+      border: 2px solid var(--text);
+      box-shadow: 2px 2px 0 var(--text);
+      padding: 6px 12px;
+      font-weight: bold;
     }
 
     table {
@@ -823,8 +848,8 @@ table tbody tr:hover {
           
           <!-- Filter Panel -->
           <div class="card" style="margin-bottom: 20px;">
-            <div class="table-header" style="border: none; padding: 0; margin-bottom: 15px;">
-              <h3 style="margin: 0;"><i class="fas fa-filter"></i> Filter Transaksi</h3>
+            <div class="table-header">
+              <h3><i class="fas fa-filter"></i> Filter Transaksi</h3>
             </div>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
               
