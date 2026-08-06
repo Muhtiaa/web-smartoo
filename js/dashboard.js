@@ -618,10 +618,18 @@ document.addEventListener('DOMContentLoaded', () => {
       activities.forEach(act => {
         let n = parseInt(String(act.nominal).replace(/[^0-9-]/g, '')) || 0;
         if (act.jenis_transaksi === 'Pemasukan') {
-          if (act.kategori && act.kategori.toLowerCase() === 'utang') fallbackDebt += n;
+          if (act.tag_status === 'Utang' || act.tag_status === 'Hutang' || (act.kategori && act.kategori.toLowerCase() === 'utang')) {
+            fallbackDebt += n; // Pinjam uang -> Utang naik
+          } else if (act.tag_status === 'Piutang' || (act.kategori && act.kategori.toLowerCase() === 'piutang')) {
+            fallbackPiutang -= n; // Ditagih/dibayar -> Piutang turun
+          }
           fallbackIncome += n;
         } else if (act.jenis_transaksi === 'Pengeluaran') {
-          if (act.kategori && act.kategori.toLowerCase() === 'piutang') fallbackPiutang += n;
+          if (act.tag_status === 'Utang' || act.tag_status === 'Hutang' || (act.kategori && act.kategori.toLowerCase() === 'utang')) {
+            fallbackDebt -= n; // Bayar utang -> Utang turun
+          } else if (act.tag_status === 'Piutang' || (act.kategori && act.kategori.toLowerCase() === 'piutang')) {
+            fallbackPiutang += n; // Ngasih pinjaman -> Piutang naik
+          }
           fallbackExpense += n;
         }
       });
@@ -757,6 +765,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-action').value = "tambah";
     document.getElementById('form-id').value = "";
     crudForm.reset();
+    
+    if (typeof window.updateKategoriDropdown === 'function') {
+      window.updateKategoriDropdown();
+    }
     
     // Set default date/time to now
     const now = new Date();
