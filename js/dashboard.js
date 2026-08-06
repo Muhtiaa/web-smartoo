@@ -1,3 +1,10 @@
+const API_ENDPOINTS = {
+  dashboard: 'https://n8n.smart-oo.me/webhook/dashboard-api',
+  crud: 'https://n8n.smart-oo.me/webhook/dashboard-crud',
+  kategori: 'https://n8n.smart-oo.me/webhook/dashboard-kategori-crud',
+  dompet: 'https://n8n.smart-oo.me/webhook/dashboard-dompet-crud'
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   const loginSection = document.getElementById('login-section');
   const dashboardSection = document.getElementById('dashboard-section');
@@ -138,6 +145,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
   };
 
+  // Escape HTML to prevent XSS
+  const escapeHtml = (str) => {
+    if (str === null || str === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+  };
+
   // Set Tanggal Hari Ini
   const today = new Date();
   const options = { day: '2-digit', month: 'short', year: 'numeric' };
@@ -162,11 +177,11 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('smartoo_phone');
         localStorage.removeItem('smartoo_otp');
         localStorage.removeItem('smartoo_id_wa');
-        loginSection.classList.add('show');
+        loginSection.style.display = 'flex';
       }
     } else {
       // Tidak ada sesi, tampilkan login
-      loginSection.classList.add('show');
+      loginSection.style.display = 'flex';
       dashboardSection.style.display = 'none';
     }
   };
@@ -179,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Beritahu server untuk MENGHAPUS OTP ini secara permanen agar tidak bisa dipakai login 2 kali
     if (phone && otp) {
       try {
-        await fetch('https://n8n.smart-oo.me/webhook/dashboard-crud', {
+        await fetch(API_ENDPOINTS.crud, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'logout', phone: phone, otp: otp })
@@ -303,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!cachedKategori.some(c => c.nama_kategori.toLowerCase() === k.nama.toLowerCase() && c.jenis === k.jenis)) {
         try {
           console.log("Menambahkan kategori default yang hilang: " + k.nama);
-          await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
+          await fetch(API_ENDPOINTS.kategori, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'tambah', id_whatsapp: idWa, nama_kategori: k.nama, jenis: k.jenis })
           });
@@ -320,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!cachedDompet.some(c => c.nama_dompet.toLowerCase() === d.nama.toLowerCase())) {
         try {
           console.log("Menambahkan dompet default yang hilang: " + d.nama);
-          await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
+          await fetch(API_ENDPOINTS.dompet, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'tambah', id_whatsapp: idWa, nama_dompet: d.nama, grup: d.grup })
           });
@@ -358,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isBad || isDuplicate) {
         // Duplicate or bad found! Delete it.
         try {
-          await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
+          await fetch(API_ENDPOINTS.kategori, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'hapus', id_whatsapp: idWa, id_kategori: k.id_kategori })
           });
@@ -376,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!d.nama_dompet) continue;
       if (dompetNames.has(d.nama_dompet.toLowerCase())) {
         try {
-          await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
+          await fetch(API_ENDPOINTS.dompet, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'hapus', id_whatsapp: idWa, id_dompet: d.id_dompet })
           });
@@ -391,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const fetchDashboardData = async (phone, otp) => {
     try {
-      const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-api', {
+      const response = await fetch(API_ENDPOINTS.dashboard, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: phone, otp: otp })
@@ -649,13 +664,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td data-label="Tanggal">${act.tanggal} <br><small>${act.waktu}</small></td>
-          <td data-label="Keterangan"><strong>${act.keterangan}</strong></td>
-          <td data-label="Kategori">${act.kategori}</td>
+          <td data-label="Tanggal">${escapeHtml(act.tanggal)} <br><small>${escapeHtml(act.waktu)}</small></td>
+          <td data-label="Keterangan"><strong>${escapeHtml(act.keterangan)}</strong></td>
+          <td data-label="Kategori">${escapeHtml(act.kategori)}</td>
           <td data-label="Nominal" style="color:${color}; font-weight:bold;">${symbol} ${formatRp(act.nominal)}          </td>
           <td data-label="Aksi">
-            <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')"><i class="fas fa-edit"></i> Edit</button>
-            <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')"><i class="fas fa-trash"></i> Hapus</button>
+            <button class="btn-action btn-edit" onclick="editData('${escapeHtml(act.id_transaksi).replace(/'/g, '&#39;')}')"><i class="fas fa-edit"></i> Edit</button>
+            <button class="btn-action btn-delete" onclick="hapusData('${escapeHtml(act.id_transaksi).replace(/'/g, '&#39;')}')"><i class="fas fa-trash"></i> Hapus</button>
           </td>
         `;
         tableBodyDashboard.appendChild(tr);
@@ -700,8 +715,9 @@ document.addEventListener('DOMContentLoaded', () => {
       activities.forEach(act => {
         const date = act.tanggal;
         if (!dailyData[date]) dailyData[date] = { income: 0, expense: 0 };
-        if (act.jenis_transaksi === 'Pemasukan') dailyData[date].income += act.nominal;
-        if (act.jenis_transaksi === 'Pengeluaran') dailyData[date].expense += act.nominal;
+        const chartNominal = parseInt(String(act.nominal).replace(/[^0-9-]/g, '')) || 0;
+        if (act.jenis_transaksi === 'Pemasukan') dailyData[date].income += chartNominal;
+        if (act.jenis_transaksi === 'Pengeluaran') dailyData[date].expense += chartNominal;
       });
 
       labels = Object.keys(dailyData).sort();
@@ -809,7 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSaveCrud.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 5px;"></i> Menyimpan...';
     btnSaveCrud.disabled = true;
     try {
-      const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-crud', {
+      const response = await fetch(API_ENDPOINTS.crud, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -859,7 +875,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-kategori').value = act.kategori || "Pindah Dana";
     document.getElementById('form-nominal').value = parseInt(String(act.nominal).replace(/[^0-9-]/g, ''), 10).toLocaleString('id-ID').replace(/,/g, '.');
     
-    if (formTanggal) formTanggal.value = act.tanggal || '';
+    if (formTanggal) {
+      let tglEdit = act.tanggal || '';
+      // Convert DD/MM/YYYY → YYYY-MM-DD for <input type="date">
+      if (tglEdit.includes('/')) {
+        const p = tglEdit.split('/');
+        if (p.length === 3 && p[2].length === 4) {
+          tglEdit = `${p[2]}-${p[1]}-${p[0]}`;
+        }
+      }
+      formTanggal.value = tglEdit;
+    }
     if (formWaktu) formWaktu.value = act.waktu ? act.waktu.substring(0,5) : '';
     
     const sDana = document.getElementById('form-sumber-dana');
@@ -889,7 +915,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!id_whatsapp) return;
 
     try {
-      const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-crud', {
+      const response = await fetch(API_ENDPOINTS.crud, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -917,10 +943,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // ================= ROUTING & FILTER TRANSAKSI =================
   const switchView = (viewName) => {
     // Hide all views
-    if (viewDashboard) viewDashboard.style.display = 'none'; viewDashboard.classList.remove('view-active');
-    if (viewTransaksi) viewTransaksi.style.display = 'none'; viewTransaksi.classList.remove('view-active');
-    if (viewDompet) viewDompet.style.display = 'none'; viewDompet.classList.remove('view-active');
-    if (viewKategori) viewKategori.style.display = 'none'; viewKategori.classList.remove('view-active');
+    if (viewDashboard) { viewDashboard.style.display = 'none'; viewDashboard.classList.remove('view-active'); }
+    if (viewTransaksi) { viewTransaksi.style.display = 'none'; viewTransaksi.classList.remove('view-active'); }
+    if (viewDompet) { viewDompet.style.display = 'none'; viewDompet.classList.remove('view-active'); }
+    if (viewKategori) { viewKategori.style.display = 'none'; viewKategori.classList.remove('view-active'); }
     
     // Remove active classes
     const allNavs = [
@@ -936,19 +962,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (viewName === 'transaksi') {
       if (navTransaksi) navTransaksi.classList.add('active');
       if (navTransaksiMobile) navTransaksiMobile.classList.add('active');
-      if (viewTransaksi) viewTransaksi.style.display = 'block'; viewTransaksi.classList.add('view-active');
+      if (viewTransaksi) { viewTransaksi.style.display = 'block'; viewTransaksi.classList.add('view-active'); }
       applyFilters(); 
     } else if (viewName === 'dompet') {
       if (navDompetSidebar) navDompetSidebar.classList.add('active');
       if (navDompetMobile) navDompetMobile.classList.add('active');
-      if (viewDompet) viewDompet.style.display = 'block'; viewDompet.classList.add('view-active');
+      if (viewDompet) { viewDompet.style.display = 'block'; viewDompet.classList.add('view-active'); }
     } else if (viewName === 'kategori') {
       if (navKategoriSidebar) navKategoriSidebar.classList.add('active');
-      if (viewKategori) viewKategori.style.display = 'block'; viewKategori.classList.add('view-active');
+      if (viewKategori) { viewKategori.style.display = 'block'; viewKategori.classList.add('view-active'); }
     } else {
       if (navDashboard) navDashboard.classList.add('active');
       if (navDashboardMobile) navDashboardMobile.classList.add('active');
-      if (viewDashboard) viewDashboard.style.display = 'block'; viewDashboard.classList.add('view-active');
+      if (viewDashboard) { viewDashboard.style.display = 'block'; viewDashboard.classList.add('view-active'); }
     }
   };
 
@@ -1134,12 +1160,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td data-label="Nama Dompet">${dpt.nama_dompet}</td>
-        <td data-label="Grup">${dpt.grup}</td>
+        <td data-label="Nama Dompet">${escapeHtml(dpt.nama_dompet)}</td>
+        <td data-label="Grup">${escapeHtml(dpt.grup)}</td>
         <td data-label="Saldo">${formatRp(saldo)}</td>
         <td data-label="Aksi" class="action-buttons">
-          <button class="btn-action btn-edit" onclick="editDompet('${dpt.id_dompet}', '${dpt.grup}', '${dpt.nama_dompet}')"><i class="fas fa-edit"></i> Edit</button>
-          <button class="btn-action btn-delete" onclick="hapusDompet('${dpt.id_dompet}')"><i class="fas fa-trash"></i> Hapus</button>
+          <button class="btn-action btn-edit" onclick="editDompet('${escapeHtml(dpt.id_dompet).replace(/'/g, '&#39;')}', '${escapeHtml(dpt.grup).replace(/'/g, '&#39;')}', '${escapeHtml(dpt.nama_dompet).replace(/'/g, '&#39;')}')"><i class="fas fa-edit"></i> Edit</button>
+          <button class="btn-action btn-delete" onclick="hapusDompet('${escapeHtml(dpt.id_dompet).replace(/'/g, '&#39;')}')"><i class="fas fa-trash"></i> Hapus</button>
         </td>
       `;
       if(tblDompet) tblDompet.appendChild(tr);
@@ -1200,20 +1226,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td data-label="Tanggal">
-          <div style="font-weight:bold;">${act.tanggal || '-'}</div>
-          <div style="font-size:0.8rem; color:#888;">${act.waktu || '-'}</div>
+          <div style="font-weight:bold;">${escapeHtml(act.tanggal) || '-'}</div>
+          <div style="font-size:0.8rem; color:#888;">${escapeHtml(act.waktu) || '-'}</div>
         </td>
         <td data-label="Keterangan">
-          <div style="font-weight:bold;">${act.keterangan || '-'}</div>
-          <div style="font-size:0.8rem; color:#888;">${act.kategori || '-'}</div>
+          <div style="font-weight:bold;">${escapeHtml(act.keterangan) || '-'}</div>
+          <div style="font-size:0.8rem; color:#888;">${escapeHtml(act.kategori) || '-'}</div>
         </td>
-        <td data-label="Sumber Dana">${displaySumber}</td>
+        <td data-label="Sumber Dana">${escapeHtml(displaySumber)}</td>
         <td data-label="Nominal" style="color: ${color}; font-weight: bold;">
           ${symbol} ${formatRp(act.nominal || 0)}
         </td>
         <td data-label="Aksi">
-          <button class="btn-action btn-edit" onclick="editData('${act.id_transaksi}')"><i class="fas fa-edit"></i> Edit</button>
-          <button class="btn-action btn-delete" onclick="hapusData('${act.id_transaksi}')"><i class="fas fa-trash"></i> Hapus</button>
+          <button class="btn-action btn-edit" onclick="editData('${escapeHtml(act.id_transaksi).replace(/'/g, '&#39;')}')"><i class="fas fa-edit"></i> Edit</button>
+          <button class="btn-action btn-delete" onclick="hapusData('${escapeHtml(act.id_transaksi).replace(/'/g, '&#39;')}')"><i class="fas fa-trash"></i> Hapus</button>
         </td>
       `;
       tableBodyTransaksi.appendChild(tr);
@@ -1310,7 +1336,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
     if(!id_whatsapp) return false;
     try {
-      const res = await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
+      const res = await fetch(API_ENDPOINTS.kategori, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'read', id_whatsapp })
@@ -1344,10 +1370,10 @@ document.addEventListener('DOMContentLoaded', () => {
       optHtml += `<option value="${kat.nama_kategori}">${kat.nama_kategori}</option>`;
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td data-label="Nama Kategori">${kat.nama_kategori}</td>
+        <td data-label="Nama Kategori">${escapeHtml(kat.nama_kategori)}</td>
         <td data-label="Aksi">
-          <button class="btn-action btn-edit" onclick="editKategori('${kat.id_kategori}')"><i class="fas fa-edit"></i> Edit</button>
-          <button class="btn-action btn-delete" onclick="hapusKategori('${kat.id_kategori}')"><i class="fas fa-trash"></i> Hapus</button>
+          <button class="btn-action btn-edit" onclick="editKategori('${escapeHtml(kat.id_kategori).replace(/'/g, '&#39;')}')"><i class="fas fa-edit"></i> Edit</button>
+          <button class="btn-action btn-delete" onclick="hapusKategori('${escapeHtml(kat.id_kategori).replace(/'/g, '&#39;')}')"><i class="fas fa-trash"></i> Hapus</button>
         </td>
       `;
       if(kat.jenis === 'Pemasukan' && tblPemasukan) { tblPemasukan.appendChild(tr); hasPemasukan = true; }
@@ -1402,7 +1428,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!confirm('Hapus kategori ini?')) return;
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
     try {
-      await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
+      await fetch(API_ENDPOINTS.kategori, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'hapus', id_whatsapp, id_kategori: id })
@@ -1428,7 +1454,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSave.textContent = 'Menyimpan...';
       btnSave.disabled = true;
       try {
-        await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
+        await fetch(API_ENDPOINTS.kategori, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action, id_whatsapp, id_kategori: id, jenis, nama_kategori: nama })
@@ -1451,7 +1477,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
     if(!id_whatsapp) return false;
     try {
-      const res = await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
+      const res = await fetch(API_ENDPOINTS.dompet, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'read', id_whatsapp })
@@ -1484,7 +1510,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!confirm('Hapus dompet ini?')) return;
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
     try {
-      await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
+      await fetch(API_ENDPOINTS.dompet, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'hapus', id_whatsapp, id_dompet: id })
@@ -1510,7 +1536,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSave.textContent = 'Menyimpan...';
       btnSave.disabled = true;
       try {
-        await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
+        await fetch(API_ENDPOINTS.dompet, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action, id_whatsapp, id_dompet: id, grup, nama_dompet: nama })
