@@ -96,6 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
           formTujuanDana.value = '';
         }
       }
+      if (typeof window.updateKategoriDropdown === 'function') {
+        window.updateKategoriDropdown();
+      }
     });
   }
 
@@ -846,8 +849,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-action').value = "edit";
     document.getElementById('form-id').value = id;
     document.getElementById('form-jenis').value = act.jenis_transaksi;
+    
+    // Update Kategori Dropdown berdasarkan Jenis Transaksi
+    if (typeof window.updateKategoriDropdown === 'function') {
+      window.updateKategoriDropdown();
+    }
+    
     document.getElementById('form-keterangan').value = act.keterangan;
-    document.getElementById('form-kategori').value = act.kategori;
+    document.getElementById('form-kategori').value = act.kategori || "Pindah Dana";
     document.getElementById('form-nominal').value = parseInt(String(act.nominal).replace(/[^0-9-]/g, ''), 10).toLocaleString('id-ID').replace(/,/g, '.');
     
     if (formTanggal) formTanggal.value = act.tanggal || '';
@@ -1109,8 +1118,11 @@ document.addEventListener('DOMContentLoaded', () => {
           } else if (act.sumber_dana === dpt.nama_dompet && act.jenis_transaksi === 'Pengeluaran') {
             saldo -= nom;
           } else if (act.jenis_transaksi === 'Mutasi') {
-            if (act.sumber_dana === dpt.nama_dompet) saldo -= nom;
-            if (act.tujuan_dana === dpt.nama_dompet) saldo += nom;
+            const sd = (act.sumber_dana || "").toLowerCase();
+            const td = (act.tujuan_dana || "").toLowerCase();
+            const nd = (dpt.nama_dompet || "").toLowerCase();
+            if (sd === nd) saldo -= nom;
+            if (td === nd) saldo += nom;
           }
         });
       }
@@ -1345,7 +1357,34 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!hasPemasukan && tblPemasukan) tblPemasukan.innerHTML = '<tr><td colspan="2" style="text-align:center;">Belum ada kategori pemasukan.</td></tr>';
     if(!hasPengeluaran && tblPengeluaran) tblPengeluaran.innerHTML = '<tr><td colspan="2" style="text-align:center;">Belum ada kategori pengeluaran.</td></tr>';
     
-    if(formKategoriSelect) formKategoriSelect.innerHTML = optHtml;
+    // Initial dropdown update based on current selection
+    if (typeof window.updateKategoriDropdown === 'function') {
+      window.updateKategoriDropdown();
+    }
+  };
+
+  // Logic memisahkan opsi Kategori Dropdown
+  window.updateKategoriDropdown = () => {
+    const jenis = document.getElementById('form-jenis').value;
+    const formKategoriSelect = document.getElementById('form-kategori');
+    if(!formKategoriSelect) return;
+    
+    let optHtml = '<option value="">Pilih Kategori...</option>';
+    
+    if (jenis === 'Mutasi') {
+        optHtml += '<option value="Pindah Dana">Pindah Dana</option>';
+        formKategoriSelect.innerHTML = optHtml;
+        formKategoriSelect.value = "Pindah Dana";
+        return;
+    }
+
+    cachedKategori.forEach(kat => {
+      if (!kat.id_kategori) return;
+      if (kat.jenis === jenis) {
+        optHtml += `<option value="${kat.nama_kategori}">${kat.nama_kategori}</option>`;
+      }
+    });
+    formKategoriSelect.innerHTML = optHtml;
   };
 
   window.editKategori = (id) => {
