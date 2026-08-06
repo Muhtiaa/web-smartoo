@@ -1144,9 +1144,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ['Tunai', 'Bank', 'E-Wallet'].forEach(grp => {
        const d = totals[grp];
+       let icon = 'fa-wallet';
+       if(grp === 'Bank') icon = 'fa-university';
+       if(grp === 'E-Wallet') icon = 'fa-mobile-alt';
+       
        if (cardsDompet) cardsDompet.innerHTML += `
          <div class="card" style="padding:15px; border-left:4px solid var(--primary);">
-           <div class="card-title">${grp}</div>
+           <div class="card-title">${grp} <i class="fas ${icon}"></i></div>
            <div class="card-value" style="font-size:1.2rem;">${formatRp(d)}</div>
          </div>
        `;
