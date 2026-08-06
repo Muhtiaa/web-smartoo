@@ -29,7 +29,6 @@
   Global & Reset 
 */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
 
 /* ANIMATIONS */
 @keyframes fadeInSlideUp {
@@ -101,13 +100,13 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
       z-index: 9999;
     }
     .login-box {
-      background: var(--card-bg);
+      background: linear-gradient(135deg, #1b3c35 0%, #0d1e1a 100%);
       padding: 40px;
       border-radius: 12px;
       width: 90%;
       max-width: 400px;
-      box-shadow: var(--shadow);
-      border: var(--border);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 2px solid var(--accent);
       position: relative;
       z-index: 1;
       animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -118,15 +117,15 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
     .login-box img {
       width: 80px;
       margin-bottom: 20px;
-      filter: drop-shadow(2px 2px 0px var(--text));
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
     }
     .login-box h2 {
       margin-bottom: 10px;
-      color: var(--primary);
-      font-weight: 800;
+      color: #ffffff;
+      font-weight: 600;
     }
     .login-box p {
-      color: var(--text);
+      color: rgba(255,255,255,0.8);
       font-size: 0.9rem;
       margin-bottom: 25px;
     }
@@ -138,7 +137,7 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
       display: block;
       margin-bottom: 8px;
       font-weight: 600;
-      color: var(--text);
+      color: rgba(255,255,255,0.9);
       font-size: 0.85rem;
     }
 
@@ -181,7 +180,7 @@ body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
       text-align: center;
     }
     .login-footer p {
-      color: var(--text);
+      color: rgba(255,255,255,0.7);
       font-size: 0.85rem;
       margin: 5px 0;
     }
@@ -617,8 +616,8 @@ table tbody tr:hover {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin: -30px -30px 20px -30px;
-      padding: 20px 30px;
+      margin: -20px -20px 20px -20px;
+      padding: 15px 20px;
       background: var(--primary);
       color: white;
       border-bottom: var(--border);
@@ -974,7 +973,7 @@ table tbody tr:hover {
                 </tr>
               </thead>
               <tbody id="table-body-dompet">
-                <td colspan="4" style="text-align:center;" class="loading-text">Memuat data...</td></tr>
+                <tr><td colspan="4" style="text-align:center;" class="loading-text">Memuat data...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1084,61 +1083,21 @@ table tbody tr:hover {
         <div class="input-group">
           <label>Kategori</label>
           <select id="form-kategori" class="retro-input" required>
-            <option value="">Pilih Kategori...</option>
-            <option value="Gaji">Gaji</option>
-            <option value="Bonus">Bonus</option>
-            <option value="Tip">Tip</option>
-            <option value="Hasil Usaha">Hasil Usaha</option>
-            <option value="Investasi">Investasi</option>
-            <option value="Makanan">Makanan</option>
-            <option value="Transportasi">Transportasi</option>
-            <option value="Hiburan">Hiburan</option>
-            <option value="Pendidikan">Pendidikan</option>
-            <option value="Belanja">Belanja</option>
-            <option value="Tagihan">Tagihan</option>
-            <option value="Cicilan">Cicilan</option>
-            <option value="Belanja Online">Belanja Online</option>
-            <option value="Asuransi">Asuransi</option>
-            <option value="Donasi">Donasi</option>
-            <option value="Lain-lain">Lain-lain</option>
-            <option value="Utang">Utang</option>
-            <option value="Piutang">Piutang</option>
+            <option value="">Memuat kategori...</option>
           </select>
         </div>
         
         <div class="input-group">
           <label id="label-sumber-dana">Sumber Dana</label>
           <select id="form-sumber-dana" class="retro-input" required>
-            <option value="">Pilih Sumber Dana...</option>
-            <option value="Tunai">Tunai</option>
-            <option value="BCA">BCA</option>
-            <option value="Mandiri">Mandiri</option>
-            <option value="BNI">BNI</option>
-            <option value="BRI">BRI</option>
-            <option value="BSI">BSI</option>
-            <option value="OVO">OVO</option>
-            <option value="GoPay">GoPay</option>
-            <option value="DANA">DANA</option>
-            <option value="ShopeePay">ShopeePay</option>
-            <option value="Lain-lain">Lain-lain</option>
+            <option value="">Memuat dompet...</option>
           </select>
         </div>
 
         <div class="input-group" id="tujuan-dana-group" style="display: none;">
           <label>Tujuan Dana (Untuk Mutasi)</label>
           <select id="form-tujuan-dana" class="retro-input">
-            <option value="">Pilih Tujuan Dana...</option>
-            <option value="Tunai">Tunai</option>
-            <option value="BCA">BCA</option>
-            <option value="Mandiri">Mandiri</option>
-            <option value="BNI">BNI</option>
-            <option value="BRI">BRI</option>
-            <option value="BSI">BSI</option>
-            <option value="OVO">OVO</option>
-            <option value="GoPay">GoPay</option>
-            <option value="DANA">DANA</option>
-            <option value="ShopeePay">ShopeePay</option>
-            <option value="Lain-lain">Lain-lain</option>
+            <option value="">Memuat dompet...</option>
           </select>
         </div>
 
@@ -1244,7 +1203,7 @@ table tbody tr:hover {
         <input type="month" id="export-month-single" class="retro-input">
       </div>
       
-      <div id="export-kustom-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; display: none;">
+      <div id="export-kustom-group" style="grid-template-columns: 1fr 1fr; gap: 15px; display: none;">
         <div class="input-group">
           <label>Dari Tanggal</label>
           <input type="date" id="export-date-start" class="retro-input">
