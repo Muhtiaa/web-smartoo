@@ -87,9 +87,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target.value === 'Mutasi') {
         if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'block';
         if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana (Asal)';
+        if(formTujuanDana) formTujuanDana.required = true;
       } else {
         if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'none';
         if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana';
+        if(formTujuanDana) {
+          formTujuanDana.required = false;
+          formTujuanDana.value = '';
+        }
       }
     });
   }
@@ -1132,6 +1137,11 @@ document.addEventListener('DOMContentLoaded', () => {
       tblDompet.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada dompet/sumber dana.</td></tr>';
     }
 
+    const formSumberDanaSelect = document.getElementById('form-sumber-dana');
+    const formTujuanDanaSelect = document.getElementById('form-tujuan-dana');
+    if(formSumberDanaSelect) formSumberDanaSelect.innerHTML = optHtml;
+    if(formTujuanDanaSelect) formTujuanDanaSelect.innerHTML = optHtml;
+
     ['Tunai', 'Bank', 'E-Wallet'].forEach(grp => {
        const d = totals[grp];
        if (cardsDompet) cardsDompet.innerHTML += `
@@ -1166,6 +1176,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if(act.jenis_transaksi === 'Pengeluaran'){ color = '#c0392b'; symbol = '-'; }
       if(act.jenis_transaksi === 'Mutasi'){ color = '#f39c12'; symbol = ''; }
       
+      let displaySumber = act.sumber_dana || '-';
+      if (act.jenis_transaksi === 'Mutasi' && act.tujuan_dana && act.tujuan_dana !== '-') {
+         displaySumber = `${act.sumber_dana} ➡ ${act.tujuan_dana}`;
+      }
+      
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td data-label="Tanggal">
@@ -1176,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="font-weight:bold;">${act.keterangan || '-'}</div>
           <div style="font-size:0.8rem; color:#888;">${act.kategori || '-'}</div>
         </td>
-        <td data-label="Sumber Dana">${act.sumber_dana || '-'}</td>
+        <td data-label="Sumber Dana">${displaySumber}</td>
         <td data-label="Nominal" style="color: ${color}; font-weight: bold;">
           ${symbol} ${formatRp(act.nominal || 0)}
         </td>
