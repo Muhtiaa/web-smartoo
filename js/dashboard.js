@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Simpan token (atau idWa sementara sebagai token fallback)
-        const token = data.token || idWa;
+        const token = data.token || authPayload.otp || authPayload.token;
         if (token) {
           localStorage.setItem('smartoo_token', token);
         }
