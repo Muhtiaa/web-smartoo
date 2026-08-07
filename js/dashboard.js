@@ -873,6 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (idx !== -1) cachedActivities[idx] = Object.assign({}, cachedActivities[idx], payload);
         }
         renderDashboard({ activities: cachedActivities });
+        renderDompet(); // Update saldo dompet seketika
       } else {
         crudError.textContent = resData.message || "Gagal menyimpan data.";
         crudError.style.display = "block";
@@ -963,6 +964,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast("Transaksi berhasil dihapus!", "success");
         cachedActivities = cachedActivities.filter(a => a.id_transaksi !== id);
         renderDashboard({ activities: cachedActivities });
+        renderDompet(); // Update saldo dompet seketika
       } else {
         showToast("Gagal menghapus data.", "error");
         alert(resData.message || "Gagal menghapus data.");
