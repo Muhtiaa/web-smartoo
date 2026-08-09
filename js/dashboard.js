@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const fetchDashboardData = async (phone, otp) => {
     try {
-      const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-sync', {
+      const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-api', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: phone, otp: otp })
@@ -416,10 +416,11 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('smartoo_id_wa', idWa);
         }
         
-        cachedKategori = data.kategori || [];
-        cachedDompet = data.dompet || [];
-        
         renderDashboard(data);
+        
+        // Tarik data Kategori dan Dompet secara paralel (Asynchronous) agar loading login secepat kilat
+        if (typeof window.fetchKategori === 'function') window.fetchKategori();
+        if (typeof window.fetchDompet === 'function') window.fetchDompet();
         
         initializeDefaultsIfNeeded();
         // Mulai Silent Refresh setelah data awal dimuat
