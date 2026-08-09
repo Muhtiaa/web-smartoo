@@ -29,6 +29,7 @@
   Global & Reset 
 */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background-color: #f4f6f9; color: #333; overflow-x: hidden; }
 
 /* ANIMATIONS */
 @keyframes fadeInSlideUp {
@@ -616,8 +617,8 @@ table tbody tr:hover {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin: -20px -20px 20px -20px;
-      padding: 15px 20px;
+      margin: -30px -30px 20px -30px;
+      padding: 20px 30px;
       background: var(--primary);
       color: white;
       border-bottom: var(--border);
@@ -840,13 +841,14 @@ table tbody tr:hover {
                 <tr>
                   <th>Tanggal</th>
                   <th>Keterangan</th>
-                  <th>Kategori</th>
+                  <th>Jenis</th>
+                  <th>Sumber Dana</th>
                   <th>Nominal</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody id="table-body-dashboard">
-                <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
+                <tr><td colspan="6" style="text-align:center;">Memuat data...</td></tr>
               </tbody>
             </table>
           </div>
@@ -863,8 +865,10 @@ table tbody tr:hover {
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
               
               <div>
-                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Cari Keterangan</label>
-                <input type="text" id="filter-search" class="retro-input" placeholder="Ketik kata kunci...">
+                <label style="font-size:0.8rem; font-weight:bold; color:#666;">Jenis Kategori</label>
+                <select id="filter-search" class="form-control">
+                  <option value="">Semua Kategori</option>
+                </select>
               </div>
 
               <div>
@@ -933,13 +937,14 @@ table tbody tr:hover {
                 <tr>
                   <th>Tanggal</th>
                   <th>Keterangan</th>
+                  <th>Jenis</th>
                   <th>Sumber Dana</th>
                   <th>Nominal</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody id="table-body-transaksi">
-                <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
+                <tr><td colspan="6" style="text-align:center;">Memuat data...</td></tr>
               </tbody>
             </table>
 
@@ -973,7 +978,7 @@ table tbody tr:hover {
                 </tr>
               </thead>
               <tbody id="table-body-dompet">
-                <tr><td colspan="4" style="text-align:center;" class="loading-text">Memuat data...</td></tr>
+                <td colspan="4" style="text-align:center;" class="loading-text">Memuat data...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1038,7 +1043,7 @@ table tbody tr:hover {
       <ul class="nav-links" style="padding: 0;">
         <li><a href="#" id="nav-kategori-mobile" style="color: var(--text); padding: 15px;"><i class="fas fa-tags"></i> Kategori</a></li>
         <li><a href="#" id="nav-export-mobile" style="color: var(--text); padding: 15px;"><i class="fas fa-file-export"></i> Export Data</a></li>
-        <li><a href="#" onclick="document.getElementById('settings-modal').classList.add('show'); return false;" style="color: var(--text); padding: 15px;"><i class="fas fa-cog"></i> Pengaturan</a></li>
+        <li><a href="#" onclick="alert('Fitur Pengaturan sedang dalam pengembangan!'); return false;" style="color: var(--text); padding: 15px;"><i class="fas fa-cog"></i> Pengaturan</a></li>
         <li><a href="#" id="btn-logout-mobile" style="color: #e74c3c; padding: 15px;"><i class="fas fa-sign-out-alt"></i> Keluar</a></li>
       </ul>
     </div>
@@ -1083,21 +1088,61 @@ table tbody tr:hover {
         <div class="input-group">
           <label>Kategori</label>
           <select id="form-kategori" class="retro-input" required>
-            <option value="">Memuat kategori...</option>
+            <option value="">Pilih Kategori...</option>
+            <option value="Gaji">Gaji</option>
+            <option value="Bonus">Bonus</option>
+            <option value="Tip">Tip</option>
+            <option value="Hasil Usaha">Hasil Usaha</option>
+            <option value="Investasi">Investasi</option>
+            <option value="Makanan">Makanan</option>
+            <option value="Transportasi">Transportasi</option>
+            <option value="Hiburan">Hiburan</option>
+            <option value="Pendidikan">Pendidikan</option>
+            <option value="Belanja">Belanja</option>
+            <option value="Tagihan">Tagihan</option>
+            <option value="Cicilan">Cicilan</option>
+            <option value="Belanja Online">Belanja Online</option>
+            <option value="Asuransi">Asuransi</option>
+            <option value="Donasi">Donasi</option>
+            <option value="Lain-lain">Lain-lain</option>
+            <option value="Utang">Utang</option>
+            <option value="Piutang">Piutang</option>
           </select>
         </div>
         
         <div class="input-group">
           <label id="label-sumber-dana">Sumber Dana</label>
           <select id="form-sumber-dana" class="retro-input" required>
-            <option value="">Memuat dompet...</option>
+            <option value="">Pilih Sumber Dana...</option>
+            <option value="Tunai">Tunai</option>
+            <option value="BCA">BCA</option>
+            <option value="Mandiri">Mandiri</option>
+            <option value="BNI">BNI</option>
+            <option value="BRI">BRI</option>
+            <option value="BSI">BSI</option>
+            <option value="OVO">OVO</option>
+            <option value="GoPay">GoPay</option>
+            <option value="DANA">DANA</option>
+            <option value="ShopeePay">ShopeePay</option>
+            <option value="Lain-lain">Lain-lain</option>
           </select>
         </div>
 
         <div class="input-group" id="tujuan-dana-group" style="display: none;">
           <label>Tujuan Dana (Untuk Mutasi)</label>
           <select id="form-tujuan-dana" class="retro-input">
-            <option value="">Memuat dompet...</option>
+            <option value="">Pilih Tujuan Dana...</option>
+            <option value="Tunai">Tunai</option>
+            <option value="BCA">BCA</option>
+            <option value="Mandiri">Mandiri</option>
+            <option value="BNI">BNI</option>
+            <option value="BRI">BRI</option>
+            <option value="BSI">BSI</option>
+            <option value="OVO">OVO</option>
+            <option value="GoPay">GoPay</option>
+            <option value="DANA">DANA</option>
+            <option value="ShopeePay">ShopeePay</option>
+            <option value="Lain-lain">Lain-lain</option>
           </select>
         </div>
 
@@ -1137,6 +1182,7 @@ table tbody tr:hover {
             <option value="Tunai">Tunai</option>
             <option value="Bank">Bank</option>
             <option value="E-Wallet">E-Wallet</option>
+            <option value="Tabungan">Tabungan / Investasi</option>
           </select>
         </div>
         <div class="input-group">
@@ -1203,7 +1249,7 @@ table tbody tr:hover {
         <input type="month" id="export-month-single" class="retro-input">
       </div>
       
-      <div id="export-kustom-group" style="grid-template-columns: 1fr 1fr; gap: 15px; display: none;">
+      <div id="export-kustom-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; display: none;">
         <div class="input-group">
           <label>Dari Tanggal</label>
           <input type="date" id="export-date-start" class="retro-input">
@@ -1251,6 +1297,7 @@ table tbody tr:hover {
     </div>
   </div>
 
-  <script src="../js/dashboard.js?v=3"></script>
+  <script src="../js/dashboard.js"></script>
 </body>
 </html>
+
