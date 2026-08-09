@@ -866,7 +866,7 @@ table tbody tr:hover {
               
               <div>
                 <label style="font-size:0.8rem; font-weight:bold; color:#666;">Jenis Kategori</label>
-                <select id="filter-search" class="form-control">
+                <select id="filter-search" class="retro-input">
                   <option value="">Semua Kategori</option>
                 </select>
               </div>
@@ -878,6 +878,7 @@ table tbody tr:hover {
                   <option value="Pemasukan">Pemasukan</option>
                   <option value="Pengeluaran">Pengeluaran</option>
                   <option value="Mutasi">Mutasi</option>
+                  <option value="Nabung/Investasi">Nabung / Investasi</option>
                 </select>
               </div>
 
@@ -1073,10 +1074,11 @@ table tbody tr:hover {
 
         <div class="input-group">
           <label>Jenis Transaksi</label>
-          <select id="form-jenis" class="retro-input" required>
+          <select id="form-jenis" class="retro-input" required onchange="updateKategoriDropdown()">
             <option value="Pengeluaran">Pengeluaran</option>
             <option value="Pemasukan">Pemasukan</option>
             <option value="Mutasi">Mutasi (Pindah Dana)</option>
+            <option value="Nabung/Investasi">Nabung / Investasi</option>
           </select>
         </div>
         
