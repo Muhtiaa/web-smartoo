@@ -84,7 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (formJenis) {
     formJenis.addEventListener('change', (e) => {
-      if (e.target.value === 'Mutasi') {
+      const val = e.target.value;
+      if (val === 'Mutasi' || val === 'Nabung/Investasi') {
         if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'block';
         if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana (Asal)';
         if(formTujuanDana) formTujuanDana.required = true;
@@ -93,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana';
         if(formTujuanDana) {
           formTujuanDana.required = false;
-          formTujuanDana.value = '';
+          formTujuanDana.value = "";
         }
       }
       if (typeof window.updateKategoriDropdown === 'function') {
@@ -872,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
       id_whatsapp: id_whatsapp,
       nama_pengguna: nama_pengguna,
       id_transaksi: id_transaksi,
-      jenis_transaksi: jenis,
+      jenis_transaksi: jenis === 'Nabung/Investasi' ? 'Mutasi' : jenis,
       keterangan: keterangan,
       kategori: kategori,
       nominal: parseInt(nominal),
@@ -937,14 +938,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-kategori').value = act.kategori || "Pindah Dana";
     document.getElementById('form-nominal').value = parseInt(String(act.nominal).replace(/[^0-9-]/g, ''), 10).toLocaleString('id-ID').replace(/,/g, '.');
     
-    if (formTanggal) formTanggal.value = act.tanggal || '';
-    if (formWaktu) formWaktu.value = act.waktu ? act.waktu.substring(0,5) : '';
+    if(formTanggal) formTanggal.value = act.tanggal || '';
+    if(formWaktu) formWaktu.value = act.waktu ? act.waktu.substring(0,5) : '';
     
+    // Set dompet dropdown values after updateKategoriDropdown builds them
     const sDana = document.getElementById('form-sumber-dana');
     if(sDana) sDana.value = act.sumber_dana || "Tunai";
     if(formTujuanDana) formTujuanDana.value = act.tujuan_dana || "";
     
-    if(act.jenis_transaksi === 'Mutasi') {
+    if(act.jenis_transaksi === 'Mutasi' || act.jenis_transaksi === 'Nabung/Investasi') {
        if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'block';
        if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana (Asal)';
     } else {
@@ -1166,9 +1168,10 @@ document.addEventListener('DOMContentLoaded', () => {
       cachedActivities.forEach(act => {
         const checkAndAdd = (danaName) => {
           if (!danaName || danaName === '-' || danaName.trim() === '') return;
-          if (cachedDompet.some(d => d.nama_dompet && d.nama_dompet.toLowerCase() === danaName.toLowerCase())) return;
+          const lower = danaName.toLowerCase();
+          if (['bank', 'e-wallet', 'tunai', 'tabungan'].includes(lower)) return; // Abaikan generic name
+          if (cachedDompet.some(d => d.nama_dompet && d.nama_dompet.toLowerCase() === lower)) return;
           let grup = 'Bank';
-          let lower = danaName.toLowerCase();
           if (lower.includes('tunai') || lower.includes('cash')) grup = 'Tunai';
           else if (['ovo', 'gopay', 'dana', 'shopeepay', 'linkaja', 'spay', 'shopee'].some(ew => lower.includes(ew))) grup = 'E-Wallet';
           else if (['bibit', 'reksadana', 'saham', 'deposito', 'celengan', 'tabungan'].some(tb => lower.includes(tb))) grup = 'Tabungan';
@@ -1500,6 +1503,39 @@ document.addEventListener('DOMContentLoaded', () => {
   window.updateKategoriDropdown = () => {
     const jenis = document.getElementById('form-jenis').value;
     const formKategoriSelect = document.getElementById('form-kategori');
+    const formSumberSelect = document.getElementById('form-sumber-dana');
+    const formTujuanSelect = document.getElementById('form-tujuan-dana');
+    
+    // Build options for Sumber Dana & Tujuan Dana dynamically
+    if (formSumberSelect && formTujuanSelect && cachedDompet.length > 0) {
+      let optSumber = '<option value="">Pilih Sumber Dana...</option>';
+      let optTujuan = '<option value="">Pilih Tujuan Dana...</option>';
+      
+      const grupOrder = { 'Tunai': 0, 'Bank': 1, 'E-Wallet': 2, 'Tabungan': 3 };
+      const sortedDompet = [...cachedDompet].sort((a, b) => (grupOrder[a.grup] || 99) - (grupOrder[b.grup] || 99));
+      
+      sortedDompet.forEach(dpt => {
+        if (!dpt.nama_dompet) return;
+        
+        if (jenis === 'Nabung/Investasi') {
+          // Sumber Dana = Non-Tabungan, Tujuan Dana = Tabungan
+          if (dpt.grup !== 'Tabungan') optSumber += `<option value="${dpt.nama_dompet}">${dpt.nama_dompet}</option>`;
+          if (dpt.grup === 'Tabungan') optTujuan += `<option value="${dpt.nama_dompet}">${dpt.nama_dompet}</option>`;
+        } else {
+          // Mutasi, Pemasukan, Pengeluaran = Tampilkan semua
+          optSumber += `<option value="${dpt.nama_dompet}">${dpt.nama_dompet}</option>`;
+          optTujuan += `<option value="${dpt.nama_dompet}">${dpt.nama_dompet}</option>`;
+        }
+      });
+      
+      const oldSumber = formSumberSelect.value;
+      const oldTujuan = formTujuanSelect.value;
+      formSumberSelect.innerHTML = optSumber;
+      formTujuanSelect.innerHTML = optTujuan;
+      if (oldSumber) formSumberSelect.value = oldSumber;
+      if (oldTujuan) formTujuanSelect.value = oldTujuan;
+    }
+
     if(!formKategoriSelect) return;
     
     let optHtml = '<option value="">Pilih Kategori...</option>';
