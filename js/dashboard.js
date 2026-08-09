@@ -1573,19 +1573,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const phone = localStorage.getItem('smartoo_phone');
     const otp = localStorage.getItem('smartoo_otp');
     try {
+      const backupKategori = JSON.parse(JSON.stringify(cachedKategori));
       // Optimistic UI Update
       cachedKategori = cachedKategori.filter(k => k.id_kategori !== id);
       renderKategori();
       
-      await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
+      const res = await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'hapus', id_whatsapp, phone, otp, id_kategori: id })
       });
-      showToast("Kategori berhasil dihapus!", "success");
-      fetchKategori();
+      const data = await res.json();
+      if (data.status === 'error') {
+         cachedKategori = backupKategori; // Rollback
+         renderKategori();
+         showToast(data.message || "Gagal menghapus kategori", "error");
+      } else {
+         showToast("Kategori berhasil dihapus!", "success");
+         fetchKategori();
+      }
     } catch(err) {
-      showToast("Gagal menghapus kategori", "error");
+      showToast("Terjadi kesalahan jaringan", "error");
     }
   };
 
@@ -1605,6 +1613,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSave.textContent = 'Menyimpan...';
       btnSave.disabled = true;
       try {
+        const backupKategori = JSON.parse(JSON.stringify(cachedKategori));
         // Optimistic UI Update
         if (action === 'tambah') {
            cachedKategori.push({ id_kategori: 'temp_' + Date.now(), jenis, nama_kategori: nama });
@@ -1614,16 +1623,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         renderKategori();
 
-        await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
+        const res = await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action, id_whatsapp, phone, otp, id_kategori: id, jenis, nama_kategori: nama })
         });
-        if(modalKategori) modalKategori.classList.remove('show');
-        showToast("Kategori berhasil disimpan!", "success");
-        fetchKategori();
+        const data = await res.json();
+        
+        if (data.status === 'error') {
+           cachedKategori = backupKategori; // Rollback
+           renderKategori();
+           showToast(data.message || "Gagal menyimpan kategori", "error");
+        } else {
+           if(modalKategori) modalKategori.classList.remove('show');
+           showToast("Kategori berhasil disimpan!", "success");
+           fetchKategori();
+        }
       } catch(err) {
-        showToast("Gagal menyimpan kategori", "error");
+        showToast("Terjadi kesalahan jaringan", "error");
       } finally {
         btnSave.textContent = 'SIMPAN KATEGORI';
         btnSave.disabled = false;
@@ -1674,19 +1691,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const phone = localStorage.getItem('smartoo_phone');
     const otp = localStorage.getItem('smartoo_otp');
     try {
+      const backupDompet = JSON.parse(JSON.stringify(cachedDompet));
       // Optimistic UI Update
       cachedDompet = cachedDompet.filter(d => d.id_dompet !== id);
       renderDompet();
 
-      await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
+      const res = await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'hapus', id_whatsapp, phone, otp, id_dompet: id })
       });
-      showToast("Dompet berhasil dihapus!", "success");
-      fetchDompet();
+      const data = await res.json();
+      if (data.status === 'error') {
+         cachedDompet = backupDompet; // Rollback
+         renderDompet();
+         showToast(data.message || "Gagal menghapus dompet", "error");
+      } else {
+         showToast("Dompet berhasil dihapus!", "success");
+         fetchDompet();
+      }
     } catch(err) {
-      showToast("Gagal menghapus dompet", "error");
+      showToast("Terjadi kesalahan jaringan", "error");
     }
   };
 
@@ -1706,6 +1731,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSave.textContent = 'Menyimpan...';
       btnSave.disabled = true;
       try {
+        const backupDompet = JSON.parse(JSON.stringify(cachedDompet));
         // Optimistic UI Update
         if (action === 'tambah') {
            cachedDompet.push({ id_dompet: 'temp_' + Date.now(), grup, nama_dompet: nama });
@@ -1715,16 +1741,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         renderDompet();
 
-        await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
+        const res = await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action, id_whatsapp, phone, otp, id_dompet: id, grup, nama_dompet: nama })
         });
-        if(modalDompet) modalDompet.classList.remove('show');
-        showToast("Dompet berhasil disimpan!", "success");
-        fetchDompet();
+        const data = await res.json();
+        
+        if (data.status === 'error') {
+           cachedDompet = backupDompet; // Rollback
+           renderDompet();
+           showToast(data.message || "Gagal menyimpan dompet", "error");
+        } else {
+           if(modalDompet) modalDompet.classList.remove('show');
+           showToast("Dompet berhasil disimpan!", "success");
+           fetchDompet();
+        }
       } catch(err) {
-        showToast("Gagal menyimpan dompet", "error");
+        showToast("Terjadi kesalahan jaringan", "error");
       } finally {
         btnSave.textContent = 'SIMPAN DOMPET';
         btnSave.disabled = false;
