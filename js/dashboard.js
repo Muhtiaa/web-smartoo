@@ -412,14 +412,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         renderDashboard(data);
         
-        // Fetch Dompet & Kategori after successful login
-        await window.fetchKategori();
-        await window.fetchDompet();
-        
-        await initializeDefaultsIfNeeded();
-        
-        // Mulai Silent Refresh setelah data awal dimuat
-        startPolling();
+        // Fetch Dompet & Kategori in parallel without blocking the login transition
+        Promise.all([window.fetchKategori(), window.fetchDompet()]).then(() => {
+          initializeDefaultsIfNeeded();
+          // Mulai Silent Refresh setelah data awal dimuat
+          startPolling();
+        });
         
         return true;
       } else {
@@ -711,17 +709,18 @@ document.addEventListener('DOMContentLoaded', () => {
       recent10.forEach(act => {
         const isIncome = act.jenis_transaksi === 'Pemasukan';
         const isMutasi = act.jenis_transaksi === 'Mutasi';
-        const color = isIncome ? '#27ae60' : (act.jenis_transaksi === 'Pengeluaran' ? '#c0392b' : '#f39c12');
+        const isNabung = act.jenis_transaksi === 'Nabung/Investasi';
+        const color = isIncome ? '#27ae60' : (act.jenis_transaksi === 'Pengeluaran' ? '#c0392b' : (isNabung ? '#2980b9' : '#f39c12'));
         const symbol = isIncome ? '+' : (act.jenis_transaksi === 'Pengeluaran' ? '-' : '');
         
         // Badge Jenis Transaksi
-        const badgeColor = isIncome ? '#27ae60' : (isMutasi ? '#f39c12' : '#c0392b');
+        const badgeColor = isIncome ? '#27ae60' : (isMutasi ? '#f39c12' : (isNabung ? '#2980b9' : '#c0392b'));
         const badgeLabel = act.jenis_transaksi || '-';
         const badgeHtml = `<span style="background:${badgeColor}; color:#fff; padding:2px 8px; border-radius:12px; font-size:0.75rem; white-space:nowrap;">${badgeLabel}</span>`;
         
         // Sumber Dana display
         let displaySumber = act.sumber_dana || '-';
-        if (isMutasi && act.tujuan_dana && act.tujuan_dana !== '-') {
+        if ((isMutasi || isNabung) && act.tujuan_dana && act.tujuan_dana !== '-') {
           displaySumber = `${act.sumber_dana} ➡ ${act.tujuan_dana}`;
         }
         
@@ -1277,18 +1276,20 @@ document.addEventListener('DOMContentLoaded', () => {
     pageData.forEach(act => {
       const isIncome = act.jenis_transaksi === 'Pemasukan';
       const isMutasi = act.jenis_transaksi === 'Mutasi';
+      const isNabung = act.jenis_transaksi === 'Nabung/Investasi';
       let color = '#333';
       let symbol = '';
       if(isIncome){ color = '#27ae60'; symbol = '+'; }
       if(act.jenis_transaksi === 'Pengeluaran'){ color = '#c0392b'; symbol = '-'; }
       if(isMutasi){ color = '#f39c12'; symbol = ''; }
+      if(isNabung){ color = '#2980b9'; symbol = ''; }
       
       // Badge Jenis Transaksi
-      const badgeColor = isIncome ? '#27ae60' : (isMutasi ? '#f39c12' : '#c0392b');
+      const badgeColor = isIncome ? '#27ae60' : (isMutasi ? '#f39c12' : (isNabung ? '#2980b9' : '#c0392b'));
       const badgeHtml = `<span style="background:${badgeColor}; color:#fff; padding:2px 8px; border-radius:12px; font-size:0.75rem; white-space:nowrap;">${act.jenis_transaksi || '-'}</span>`;
       
       let displaySumber = act.sumber_dana || '-';
-      if (isMutasi && act.tujuan_dana && act.tujuan_dana !== '-') {
+      if ((isMutasi || isNabung) && act.tujuan_dana && act.tujuan_dana !== '-') {
          displaySumber = `${act.sumber_dana} ➡ ${act.tujuan_dana}`;
       }
       
@@ -1317,7 +1318,28 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   if (filterSearch) filterSearch.addEventListener('change', applyFilters);
-  if (filterJenis) filterJenis.addEventListener('change', applyFilters);
+  if (filterJenis) filterJenis.addEventListener('change', (e) => {
+    // Update opsi filter kategori agar menyesuaikan jenis transaksi
+    if (filterSearch && filterSearch.tagName === 'SELECT') {
+      const jenis = e.target.value;
+      let filterOpts = '<option value="">Semua Kategori</option>';
+      const uniqueKats = new Set();
+      cachedKategori.forEach(k => {
+        if (k.nama_kategori && !uniqueKats.has(k.nama_kategori)) {
+          // Tampilkan jika Semua Jenis, ATAU jenis cocok, ATAU Nabung/Mutasi pakai kategori bawaannya sendiri
+          if (jenis === 'Semua' || k.jenis === jenis) {
+            uniqueKats.add(k.nama_kategori);
+            filterOpts += `<option value="${k.nama_kategori}">${k.nama_kategori}</option>`;
+          }
+        }
+      });
+      if (jenis === 'Mutasi' || jenis === 'Nabung/Investasi') {
+         filterOpts += '<option value="Pindah Dana">Pindah Dana</option>';
+      }
+      filterSearch.innerHTML = filterOpts;
+    }
+    applyFilters();
+  });
   if (filterWaktu) filterWaktu.addEventListener('change', (e) => {
     // Hide all first
     if (filterHarianGroup) filterHarianGroup.style.display = 'none';
@@ -1482,7 +1504,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let optHtml = '<option value="">Pilih Kategori...</option>';
     
-    if (jenis === 'Mutasi') {
+    if (jenis === 'Mutasi' || jenis === 'Nabung/Investasi') {
         optHtml += '<option value="Pindah Dana">Pindah Dana</option>';
         formKategoriSelect.innerHTML = optHtml;
         formKategoriSelect.value = "Pindah Dana";
