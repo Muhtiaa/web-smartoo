@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const fetchDashboardData = async (phone, otp) => {
     try {
-      const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-api', {
+      const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: phone, otp: otp })
@@ -411,14 +411,14 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('smartoo_id_wa', idWa);
         }
         
+        cachedKategori = data.kategori || [];
+        cachedDompet = data.dompet || [];
+        
         renderDashboard(data);
         
-        // Fetch Dompet & Kategori in parallel without blocking the login transition
-        Promise.all([window.fetchKategori(), window.fetchDompet()]).then(() => {
-          initializeDefaultsIfNeeded();
-          // Mulai Silent Refresh setelah data awal dimuat
-          startPolling();
-        });
+        initializeDefaultsIfNeeded();
+        // Mulai Silent Refresh setelah data awal dimuat
+        startPolling();
         
         return true;
       } else {
@@ -455,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!phone || !otp) return;
 
     try {
-      const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-api', {
+      const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, otp })
@@ -464,25 +464,48 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (data.status === 'sukses') {
         const newActivities = data.activities || [];
+        const newKategori = data.kategori || [];
+        const newDompet = data.dompet || [];
         
-        // Cek apakah data berubah (jumlah transaksi berbeda atau nominal terakhir berbeda)
-        const hasChanged = newActivities.length !== lastActivityCount ||
-          (newActivities.length > 0 && cachedActivities.length > 0 && 
-           newActivities[0].id_transaksi !== cachedActivities[0].id_transaksi);
-        
-        if (hasChanged) {
+        let shouldRenderDashboard = false;
+        let shouldRenderKategori = false;
+        let shouldRenderDompet = false;
+
+        // Cek perubahan Transaksi
+        if (newActivities.length !== lastActivityCount ||
+           (newActivities.length > 0 && cachedActivities.length > 0 && 
+            newActivities[0].id_transaksi !== cachedActivities[0].id_transaksi)) {
+          shouldRenderDashboard = true;
           lastActivityCount = newActivities.length;
+        }
+
+        // Cek perubahan Kategori (bandingkan panjang atau asumsi berubah)
+        if (JSON.stringify(newKategori) !== JSON.stringify(cachedKategori)) {
+          shouldRenderKategori = true;
+          cachedKategori = newKategori;
+        }
+
+        // Cek perubahan Dompet
+        if (JSON.stringify(newDompet) !== JSON.stringify(cachedDompet)) {
+          shouldRenderDompet = true;
+          cachedDompet = newDompet;
+        }
+
+        if (shouldRenderDashboard) {
           renderDashboard(data);
+        }
+        
+        if (shouldRenderKategori && viewKategori && viewKategori.style.display === 'block') {
+          renderKategoriTable();
+        }
+        
+        if (shouldRenderDompet && viewDompet && viewDompet.style.display === 'block') {
+          renderDompet();
+        }
           
-          // Refresh Dompet view jika sedang aktif
-          if (viewDompet && viewDompet.style.display === 'block') {
-            renderDompet();
-          }
-          
-          // Refresh Transaksi filter jika sedang aktif
-          if (viewTransaksi && viewTransaksi.style.display === 'block') {
-            applyFilters();
-          }
+        // Refresh Transaksi filter jika sedang aktif
+        if (viewTransaksi && viewTransaksi.style.display === 'block') {
+          applyFilters();
         }
       }
     } catch (err) {
