@@ -871,6 +871,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const payload = {
       action: action,
       id_whatsapp: id_whatsapp,
+      phone: localStorage.getItem('smartoo_phone'),
+      otp: localStorage.getItem('smartoo_otp'),
       nama_pengguna: nama_pengguna,
       id_transaksi: id_transaksi,
       jenis_transaksi: jenis === 'Nabung/Investasi' ? 'Mutasi' : jenis,
@@ -975,7 +977,9 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({
           action: 'hapus',
           id_transaksi: id,
-          id_whatsapp: id_whatsapp
+          id_whatsapp: id_whatsapp,
+          phone: localStorage.getItem('smartoo_phone'),
+          otp: localStorage.getItem('smartoo_otp')
         })
       });
       const resData = await response.json();
