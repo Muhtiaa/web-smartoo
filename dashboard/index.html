@@ -644,6 +644,33 @@ table tbody tr:hover {
       opacity: 1;
     }
 
+    /* Enhanced Modal Form Styling */
+    .modal-content .input-group, .modal-content .form-group {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .modal-content label {
+      font-weight: 700;
+      color: #2c3e50;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .modal-content .retro-input {
+      background-color: #f8f9fa;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      transition: all 0.2s ease-in-out;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .modal-content .retro-input:focus {
+      background-color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.15);
+    }
+
     /* TOAST NOTIFICATION */
     .toast-container {
       position: fixed;
