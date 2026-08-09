@@ -1404,12 +1404,14 @@ document.addEventListener('DOMContentLoaded', () => {
   let cachedKategori = [];
   window.fetchKategori = async () => {
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
-    if(!id_whatsapp) return false;
+    const phone = localStorage.getItem('smartoo_phone');
+    const otp = localStorage.getItem('smartoo_otp');
+    if(!id_whatsapp || !phone || !otp) return false;
     try {
       const res = await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'read', id_whatsapp })
+        body: JSON.stringify({ action: 'read', id_whatsapp, phone, otp })
       });
       const data = await res.json();
       if(data.status === 'sukses' && data.data) {
@@ -1510,11 +1512,13 @@ document.addEventListener('DOMContentLoaded', () => {
   window.hapusKategori = async (id) => {
     if(!confirm('Hapus kategori ini?')) return;
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
+    const phone = localStorage.getItem('smartoo_phone');
+    const otp = localStorage.getItem('smartoo_otp');
     try {
       await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'hapus', id_whatsapp, id_kategori: id })
+        body: JSON.stringify({ action: 'hapus', id_whatsapp, phone, otp, id_kategori: id })
       });
       showToast("Kategori berhasil dihapus!", "success");
       fetchKategori();
@@ -1532,6 +1536,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const jenis = document.getElementById('kategori-jenis').value;
       const nama = document.getElementById('kategori-nama').value;
       const id_whatsapp = localStorage.getItem('smartoo_id_wa');
+      const phone = localStorage.getItem('smartoo_phone');
+      const otp = localStorage.getItem('smartoo_otp');
       
       const btnSave = document.getElementById('btn-save-kategori');
       btnSave.textContent = 'Menyimpan...';
@@ -1540,7 +1546,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, id_whatsapp, id_kategori: id, jenis, nama_kategori: nama })
+          body: JSON.stringify({ action, id_whatsapp, phone, otp, id_kategori: id, jenis, nama_kategori: nama })
         });
         if(modalKategori) modalKategori.classList.remove('show');
         showToast("Kategori berhasil disimpan!", "success");
@@ -1558,12 +1564,14 @@ document.addEventListener('DOMContentLoaded', () => {
   let cachedDompet = [];
   window.fetchDompet = async () => {
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
-    if(!id_whatsapp) return false;
+    const phone = localStorage.getItem('smartoo_phone');
+    const otp = localStorage.getItem('smartoo_otp');
+    if(!id_whatsapp || !phone || !otp) return false;
     try {
       const res = await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'read', id_whatsapp })
+        body: JSON.stringify({ action: 'read', id_whatsapp, phone, otp })
       });
       const data = await res.json();
       if(data.status === 'sukses' && data.data) {
@@ -1592,11 +1600,13 @@ document.addEventListener('DOMContentLoaded', () => {
   window.hapusDompet = async (id) => {
     if(!confirm('Hapus dompet ini?')) return;
     const id_whatsapp = localStorage.getItem('smartoo_id_wa');
+    const phone = localStorage.getItem('smartoo_phone');
+    const otp = localStorage.getItem('smartoo_otp');
     try {
       await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'hapus', id_whatsapp, id_dompet: id })
+        body: JSON.stringify({ action: 'hapus', id_whatsapp, phone, otp, id_dompet: id })
       });
       showToast("Dompet berhasil dihapus!", "success");
       fetchDompet();
@@ -1614,6 +1624,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const grup = document.getElementById('dompet-grup').value;
       const nama = document.getElementById('dompet-nama').value;
       const id_whatsapp = localStorage.getItem('smartoo_id_wa');
+      const phone = localStorage.getItem('smartoo_phone');
+      const otp = localStorage.getItem('smartoo_otp');
       
       const btnSave = document.getElementById('btn-save-dompet');
       btnSave.textContent = 'Menyimpan...';
@@ -1622,7 +1634,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, id_whatsapp, id_dompet: id, grup, nama_dompet: nama })
+          body: JSON.stringify({ action, id_whatsapp, phone, otp, id_dompet: id, grup, nama_dompet: nama })
         });
         if(modalDompet) modalDompet.classList.remove('show');
         showToast("Dompet berhasil disimpan!", "success");
