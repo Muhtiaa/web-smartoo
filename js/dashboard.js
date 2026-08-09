@@ -1573,6 +1573,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const phone = localStorage.getItem('smartoo_phone');
     const otp = localStorage.getItem('smartoo_otp');
     try {
+      // Optimistic UI Update
+      cachedKategori = cachedKategori.filter(k => k.id_kategori !== id);
+      renderKategori();
+      
       await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1601,6 +1605,15 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSave.textContent = 'Menyimpan...';
       btnSave.disabled = true;
       try {
+        // Optimistic UI Update
+        if (action === 'tambah') {
+           cachedKategori.push({ id_kategori: 'temp_' + Date.now(), jenis, nama_kategori: nama });
+        } else if (action === 'edit') {
+           const idx = cachedKategori.findIndex(k => k.id_kategori === id);
+           if (idx > -1) { cachedKategori[idx].jenis = jenis; cachedKategori[idx].nama_kategori = nama; }
+        }
+        renderKategori();
+
         await fetch('https://n8n.smart-oo.me/webhook/dashboard-kategori-crud', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1661,6 +1674,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const phone = localStorage.getItem('smartoo_phone');
     const otp = localStorage.getItem('smartoo_otp');
     try {
+      // Optimistic UI Update
+      cachedDompet = cachedDompet.filter(d => d.id_dompet !== id);
+      renderDompet();
+
       await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1689,6 +1706,15 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSave.textContent = 'Menyimpan...';
       btnSave.disabled = true;
       try {
+        // Optimistic UI Update
+        if (action === 'tambah') {
+           cachedDompet.push({ id_dompet: 'temp_' + Date.now(), grup, nama_dompet: nama });
+        } else if (action === 'edit') {
+           const idx = cachedDompet.findIndex(d => d.id_dompet === id);
+           if(idx > -1) { cachedDompet[idx].grup = grup; cachedDompet[idx].nama_dompet = nama; }
+        }
+        renderDompet();
+
         await fetch('https://n8n.smart-oo.me/webhook/dashboard-dompet-crud', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
