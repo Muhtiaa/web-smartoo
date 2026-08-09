@@ -447,17 +447,26 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- SILENT REFRESH (Polling 3 Detik) ---
-  let pollingInterval = null;
+  let pollingTimer = null;
+  let isPolling = false;
   let lastActivityCount = 0;
 
   const silentRefresh = async () => {
+    if (!isPolling) return;
+    
     // Jangan refresh jika modal sedang terbuka (user sedang input)
     const anyModalOpen = document.querySelector('.modal-overlay.show');
-    if (anyModalOpen) return;
+    if (anyModalOpen) {
+      if (isPolling) pollingTimer = setTimeout(silentRefresh, 3000);
+      return;
+    }
 
     const phone = localStorage.getItem('smartoo_phone');
     const otp = localStorage.getItem('smartoo_otp');
-    if (!phone || !otp) return;
+    if (!phone || !otp) {
+      if (isPolling) pollingTimer = setTimeout(silentRefresh, 3000);
+      return;
+    }
 
     try {
       const response = await fetch('https://n8n.smart-oo.me/webhook/dashboard-sync', {
@@ -501,7 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (shouldRenderKategori && viewKategori && viewKategori.style.display === 'block') {
-          renderKategoriTable();
+          if (typeof window.renderKategori === 'function') window.renderKategori();
         }
         
         if (shouldRenderDompet && viewDompet && viewDompet.style.display === 'block') {
@@ -515,19 +524,25 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       // Silent fail - jangan ganggu user
+    } finally {
+      if (isPolling) {
+        pollingTimer = setTimeout(silentRefresh, 3000);
+      }
     }
   };
 
   const startPolling = () => {
-    if (pollingInterval) clearInterval(pollingInterval);
+    stopPolling();
+    isPolling = true;
     lastActivityCount = cachedActivities.length;
-    pollingInterval = setInterval(silentRefresh, 3000);
+    pollingTimer = setTimeout(silentRefresh, 3000);
   };
 
   const stopPolling = () => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      pollingInterval = null;
+    isPolling = false;
+    if (pollingTimer) {
+      clearTimeout(pollingTimer);
+      pollingTimer = null;
     }
   };
 
