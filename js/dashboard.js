@@ -163,11 +163,16 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('smartoo_phone');
         localStorage.removeItem('smartoo_otp');
         localStorage.removeItem('smartoo_id_wa');
-        loginSection.classList.add('show');
+        loginSection.style.display = 'flex';
+        
+        if (loginError) {
+          loginError.textContent = "Sesi berakhir atau server gangguan. Silakan login kembali.";
+          loginError.style.display = "block";
+        }
       }
     } else {
       // Tidak ada sesi, tampilkan login
-      loginSection.classList.add('show');
+      loginSection.style.display = 'flex';
       dashboardSection.style.display = 'none';
     }
   };
