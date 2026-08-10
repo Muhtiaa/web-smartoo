@@ -131,21 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Listener untuk Tombol Refresh Manual (Akan ditambahkan di HTML)
-  const btnRefresh = document.getElementById('btn-refresh-manual');
-  if (btnRefresh) {
-    btnRefresh.addEventListener('click', (e) => {
-      e.preventDefault();
-      
-      const icon = btnRefresh.querySelector('i');
-      if (icon) icon.classList.add('fa-spin');
-      
-      window.syncNow().then(() => {
-        if (icon) icon.classList.remove('fa-spin');
-        if (typeof window.showToast === 'function') window.showToast('Berhasil dimuat ulang', 'success');
-      });
-    });
-  }
 
   // --- NAVIGASI ---
   document.querySelectorAll('[id^="nav-"]').forEach(el => {
