@@ -175,9 +175,24 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resData.status === 'sukses') {
         modal.classList.remove('show');
         showToast("Transaksi berhasil disimpan!", "success");
-        // Refresh Dashboard Data
-        const phone = localStorage.getItem('smartoo_phone');
-        const otp = localStorage.getItem('smartoo_otp');
+        
+        // Optimistic UI Update untuk respon secepat kilat
+        if (action === 'tambah' || action === 'tambah-edit') {
+            payload.id_transaksi = resData.id_transaksi || payload.id_transaksi || `TX-${Date.now()}`;
+            window.cachedActivities.unshift(payload);
+        } else if (action === 'edit') {
+            const idx = window.cachedActivities.findIndex(a => a.id_transaksi === payload.id_transaksi);
+            if (idx > -1) {
+                window.cachedActivities[idx] = { ...window.cachedActivities[idx], ...payload };
+            }
+        }
+        
+        // Render ulang layar secara instan!
+        if (typeof window.renderDashboard === 'function') {
+            window.renderDashboard({ activities: window.cachedActivities });
+        }
+
+        // Sinkronisasi latar belakang
         window.syncNow();
       } else {
         crudError.textContent = resData.message || "Gagal menyimpan data.";
@@ -260,8 +275,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const resData = await response.json();
       if (resData.status === 'sukses') {
         showToast("Transaksi berhasil dihapus!", "success");
-        const phone = localStorage.getItem('smartoo_phone');
-        const otp = localStorage.getItem('smartoo_otp');
+        
+        // Optimistic UI Update
+        window.cachedActivities = window.cachedActivities.filter(a => a.id_transaksi !== id);
+        if (typeof window.renderDashboard === 'function') {
+            window.renderDashboard({ activities: window.cachedActivities });
+        }
+
+        // Sinkronisasi latar belakang
         window.syncNow();
       } else {
         showToast("Gagal menghapus data.", "error");
