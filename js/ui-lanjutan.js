@@ -1,4 +1,32 @@
 ﻿document.addEventListener('DOMContentLoaded', () => {
+  // Filter & Pagination Elements
+  const filterSearch = document.getElementById('filter-search');
+  const filterJenis = document.getElementById('filter-jenis');
+  const filterWaktu = document.getElementById('filter-waktu');
+  const filterHarianGroup = document.getElementById('filter-harian-group');
+  const filterBulananGroup = document.getElementById('filter-bulanan-group');
+  const filterDateGroup = document.getElementById('filter-date-group');
+  const filterDateGroup2 = document.getElementById('filter-date-group2');
+  
+  const filterDateSingle = document.getElementById('filter-date-single');
+  const filterMonthSingle = document.getElementById('filter-month-single');
+  const filterDateStart = document.getElementById('filter-date-start');
+  const filterDateEnd = document.getElementById('filter-date-end');
+  
+  const valFilterMasuk = document.getElementById('val-filter-pemasukan');
+  const valFilterKeluar = document.getElementById('val-filter-pengeluaran');
+  const valFilterSelisih = document.getElementById('val-filter-selisih');
+  
+  const tableBodyTransaksi = document.getElementById('table-body-transaksi');
+  const btnPrevPage = document.getElementById('btn-prev-page');
+  const btnNextPage = document.getElementById('btn-next-page');
+  const pageIndicator = document.getElementById('page-indicator');
+
+  let currentPage = 1;
+  const itemsPerPage = 10;
+  let filteredActivities = [];
+
+  // Modal Elements
   const modal = document.getElementById('crud-modal');
   const btnCatat = document.getElementById('btn-catat-transaksi');
   const btnCloseModal = document.getElementById('btn-close-modal');
@@ -13,6 +41,28 @@
   const tujuanDanaGroup = document.getElementById('tujuan-dana-group');
   const labelSumberDana = document.getElementById('label-sumber-dana');
   const formTujuanDana = document.getElementById('form-tujuan-dana');
+  
+  if (formJenis) {
+    formJenis.addEventListener('change', (e) => {
+      const val = e.target.value;
+      if (val === 'Mutasi' || val === 'Nabung/Investasi') {
+        if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'block';
+        if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana (Asal)';
+        if(formTujuanDana) formTujuanDana.required = true;
+      } else {
+        if(tujuanDanaGroup) tujuanDanaGroup.style.display = 'none';
+        if(labelSumberDana) labelSumberDana.textContent = 'Sumber Dana';
+        if(formTujuanDana) {
+          formTujuanDana.required = false;
+          formTujuanDana.value = "";
+        }
+      }
+      if (typeof window.updateKategoriDropdown === 'function') {
+        window.updateKategoriDropdown();
+      }
+    });
+  }
+
   // --- CRUD MODAL LOGIC ---
   window.showCatatModal = () => {
     document.getElementById('form-action').value = "tambah";
@@ -968,4 +1018,5 @@
     });
   }
 
+  // INIT
 });
