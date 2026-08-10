@@ -1,4 +1,31 @@
 ﻿document.addEventListener('DOMContentLoaded', () => {
+  const currentDate = document.getElementById('current-date');
+  const valSaldo = document.getElementById('val-saldo');
+  const valPemasukan = document.getElementById('val-pemasukan');
+  const valPengeluaran = document.getElementById('val-pengeluaran');
+  const valUtang = document.getElementById('val-utang');
+  const valPiutang = document.getElementById('val-piutang');
+  const tableBodyDashboard = document.getElementById('table-body-dashboard');
+
+  // View Routing Elements
+  const navDashboard = document.getElementById('nav-dashboard');
+  const navTransaksi = document.getElementById('nav-transaksi');
+  const navDompetSidebar = document.getElementById('nav-dompet-sidebar');
+  const navKategoriSidebar = document.getElementById('nav-kategori-sidebar');
+  const navDashboardMobile = document.getElementById('nav-dashboard-mobile');
+  const navTransaksiMobile = document.getElementById('nav-transaksi-mobile');
+  const viewDashboard = document.getElementById('view-dashboard');
+  const viewTransaksi = document.getElementById('view-transaksi');
+  const viewDompet = document.getElementById('view-dompet');
+  const viewKategori = document.getElementById('view-kategori');
+  
+  const navDompetMobile = document.getElementById('nav-dompet-mobile');
+  const navLainnyaMobile = document.getElementById('nav-lainnya-mobile');
+  const navKategoriMobile = document.getElementById('nav-kategori-mobile');
+  const navExportMobile = document.getElementById('nav-export-mobile');
+  const modalLainnya = document.getElementById('modal-lainnya');
+  const btnCloseLainnya = document.getElementById('btn-close-lainnya');
+
   // Filter & Pagination Elements
   const filterSearch = document.getElementById('filter-search');
   const filterJenis = document.getElementById('filter-jenis');
