@@ -10,6 +10,9 @@ let lineChartObj = null;
 window.renderDashboard = (data) => {
   const activities = data.activities || [];
   window.cachedActivities = activities;
+  if (data.metrics) {
+    window.cachedMetrics = data.metrics;
+  }
 
   let fallbackIncome = 0;
   let fallbackExpense = 0;
@@ -30,7 +33,7 @@ window.renderDashboard = (data) => {
   }
   const fallbackBalance = fallbackIncome - fallbackExpense;
   
-  let metrics = data.metrics;
+  let metrics = data.metrics || window.cachedMetrics;
   if (!metrics || (metrics.income === 0 && fallbackIncome > 0)) {
     metrics = { income: fallbackIncome, expense: fallbackExpense, balance: fallbackBalance, debt: fallbackDebt, piutang: fallbackPiutang };
   }
