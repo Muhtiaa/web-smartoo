@@ -1,4 +1,4 @@
-// ==========================================
+﻿// ==========================================
 // API.JS
 // Mengurus semua komunikasi dengan server backend (n8n)
 // ==========================================
@@ -81,6 +81,7 @@ window.fetchKategori = async () => {
     const data = await callAPI(CONFIG.API_KATEGORI, { action: 'read', id_whatsapp, phone, otp });
     if (data.status === 'sukses' && data.data) {
       window.cachedKategori = Array.isArray(data.data) ? data.data : (Object.keys(data.data).length === 0 ? [] : [data.data]);
+      if (typeof window.renderKategori === 'function') window.renderKategori();
       return true;
     }
   } catch(err) {}
@@ -102,6 +103,7 @@ window.fetchDompet = async () => {
     const data = await callAPI(CONFIG.API_DOMPET, { action: 'read', id_whatsapp, phone, otp });
     if (data.status === 'sukses' && data.data) {
       window.cachedDompet = Array.isArray(data.data) ? data.data : (Object.keys(data.data).length === 0 ? [] : [data.data]);
+      if (typeof window.renderDompet === 'function') window.renderDompet();
       return true;
     }
   } catch(err) {}
