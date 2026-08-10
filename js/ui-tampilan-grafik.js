@@ -93,8 +93,8 @@ window.renderDashboard = (data) => {
 
   window.renderCharts(metrics, activities);
   
-  if (document.getElementById('view-transaksi') && document.getElementById('view-transaksi').style.display === 'block') {
-    if (typeof window.applyFilters === 'function') window.applyFilters();
+  if (typeof window.applyFilters === 'function') {
+    window.applyFilters();
   }
 };
 
