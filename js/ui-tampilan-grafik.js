@@ -72,7 +72,7 @@ window.renderDashboard = (data) => {
       
       let displaySumber = act.sumber_dana || '-';
       if ((isMutasi || isNabung) && act.tujuan_dana && act.tujuan_dana !== '-') {
-        displaySumber = `${act.sumber_dana} ➡ ${act.tujuan_dana}`;
+        displaySumber = `${act.sumber_dana} <i class="fas fa-arrow-right" style="font-size:0.8em; opacity:0.7; margin:0 4px;"></i> ${act.tujuan_dana}`;
       }
       
       const tr = document.createElement('tr');
