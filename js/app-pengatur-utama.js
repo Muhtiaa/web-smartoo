@@ -107,14 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const data = await window.syncDashboardData();
       if (data && data.status === 'sukses') {
-        let changed = false;
-        if (data.activities && data.activities.length !== window.cachedActivities.length) changed = true;
-        
-        if (changed) {
-          window.renderDashboard(data);
-          if (typeof window.showToast === 'function') {
-            window.showToast('Data terbaru telah disinkronkan', 'success');
-          }
+        window.renderDashboard(data);
+        if (typeof window.showToast === 'function') {
+          window.showToast('Data terbaru telah disinkronkan', 'success');
         }
       }
     } catch (e) {
