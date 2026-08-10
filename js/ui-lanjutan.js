@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   const currentDate = document.getElementById('current-date');
   const valSaldo = document.getElementById('val-saldo');
   const valPemasukan = document.getElementById('val-pemasukan');
@@ -150,7 +150,7 @@
       otp: localStorage.getItem('smartoo_otp'),
       nama_pengguna: nama_pengguna,
       id_transaksi: id_transaksi,
-      jenis_transaksi: jenis === 'Nabung/Investasi' ? 'Mutasi' : jenis,
+      jenis_transaksi: jenis,
       keterangan: keterangan,
       kategori: kategori,
       nominal: parseInt(nominal),
@@ -178,7 +178,7 @@
         // Refresh Dashboard Data
         const phone = localStorage.getItem('smartoo_phone');
         const otp = localStorage.getItem('smartoo_otp');
-        await fetchDashboardData(phone, otp);
+        window.syncNow();
       } else {
         crudError.textContent = resData.message || "Gagal menyimpan data.";
         crudError.style.display = "block";
@@ -262,7 +262,7 @@
         showToast("Transaksi berhasil dihapus!", "success");
         const phone = localStorage.getItem('smartoo_phone');
         const otp = localStorage.getItem('smartoo_otp');
-        await fetchDashboardData(phone, otp);
+        window.syncNow();
       } else {
         showToast("Gagal menghapus data.", "error");
         alert(resData.message || "Gagal menghapus data.");
@@ -478,14 +478,15 @@
       if (window.cachedActivities) {
         window.cachedActivities.forEach(act => {
           let nom = parseInt(String(act.nominal).replace(/[^0-9-]/g, '')) || 0;
-          if (act.sumber_dana === dpt.nama_dompet && act.jenis_transaksi === 'Pemasukan') {
+          const sd = (act.sumber_dana || "").toLowerCase();
+          const td = (act.tujuan_dana || "").toLowerCase();
+          const nd = (dpt.nama_dompet || "").toLowerCase();
+
+          if (sd === nd && act.jenis_transaksi === 'Pemasukan') {
             saldo += nom;
-          } else if (act.sumber_dana === dpt.nama_dompet && act.jenis_transaksi === 'Pengeluaran') {
+          } else if (sd === nd && act.jenis_transaksi === 'Pengeluaran') {
             saldo -= nom;
-          } else if (act.jenis_transaksi === 'Mutasi') {
-            const sd = (act.sumber_dana || "").toLowerCase();
-            const td = (act.tujuan_dana || "").toLowerCase();
-            const nd = (dpt.nama_dompet || "").toLowerCase();
+          } else if (act.jenis_transaksi === 'Mutasi' || act.jenis_transaksi === 'Nabung/Investasi') {
             if (sd === nd) saldo -= nom;
             if (td === nd) saldo += nom;
           }
@@ -572,7 +573,7 @@
       
       let displaySumber = act.sumber_dana || '-';
       if ((isMutasi || isNabung) && act.tujuan_dana && act.tujuan_dana !== '-') {
-         displaySumber = `${act.sumber_dana} âž¡ ${act.tujuan_dana}`;
+         displaySumber = `${act.sumber_dana} <i class="fas fa-arrow-right" style="font-size:0.8em; opacity:0.7; margin:0 4px;"></i> ${act.tujuan_dana}`;
       }
       
       const tr = document.createElement('tr');
