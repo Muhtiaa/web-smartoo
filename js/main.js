@@ -8,7 +8,7 @@
 // ============================================================
 const CONFIG = {
   csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQdgzjoUdoMloIospOYe7Nc9JSnnQN7zn_G15oi9EFzaW0ENeNGPlRc2RUD4DW_mQ3NZPirJed44D_3/pub?gid=0&single=true&output=csv",
-  waNumber: "6281384816826",
+  waNumber: "6285817266784",
   tgBot: "Smartoo_GenTwo_bot"
 };
 
@@ -18,11 +18,11 @@ const CONFIG = {
 const SITE_DATA = {
   hero: {
     typingTexts: [
-      "n8n Automation Expert",
-      "AI Solutions Architect",
-      "WhatsApp Bot Developer",
+      "AI Automation Platform",
       "Business Process Automator",
-      "Telegram Bot Builder"
+      "AI Solutions Architect",
+      "WhatsApp & Web Integration",
+      "n8n Automation Expert"
     ]
   },
 
@@ -549,7 +549,7 @@ function renderProjects() {
         <p class="card-desc">${desc}</p>
         
         <div class="card-actions" style="margin-bottom: 12px;">
-          <a href="${detailLink}" class="btn read-more-project" style="width:100%; background:var(--bg-primary); border:2px solid var(--text-dark); color:var(--text-dark); text-align:center;">Detail Project ➔</a>
+          <a href="${detailLink}" class="btn read-more-project" style="width:100%; background:var(--bg-primary); border:2px solid var(--text-dark); color:var(--text-dark); text-align:center;">Lihat Product ➔</a>
         </div>
       </div>
     `;

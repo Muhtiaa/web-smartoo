@@ -69,6 +69,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const labelSumberDana = document.getElementById('label-sumber-dana');
   const formTujuanDana = document.getElementById('form-tujuan-dana');
   
+  if (formNominal) {
+    formNominal.addEventListener('input', function(e) {
+      let val = this.value.replace(/[^0-9]/g, '');
+      if (val) {
+        this.value = parseInt(val, 10).toLocaleString('id-ID').replace(/,/g, '.');
+      } else {
+        this.value = '';
+      }
+    });
+  }
+  
   if (formJenis) {
     formJenis.addEventListener('change', (e) => {
       const val = e.target.value;
